@@ -1,3 +1,7 @@
+# Build and Start application
+```docker build --pull --rm -f "Dockerfile" -t oracletransactiontracker:latest "."```  
+```docker run --rm -d -p 8000:8000/tcp oracletransactiontracker:latest ```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
