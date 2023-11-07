@@ -2,4 +2,9 @@
 
 ## Oracle OpenCBDC Transaction Tracker UI
 
-- To run the file, use **npm install** first and then run **npm start**
+## Usage
+
+npm install
+
+## Run on http://localhost:3000
+npm start
