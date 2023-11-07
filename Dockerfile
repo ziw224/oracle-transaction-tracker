@@ -10,20 +10,19 @@ COPY ./src ./src
 # Build React app
 RUN npm run build
 
-# Set up FastAPI & copy react build
+# Copy files
 FROM python:3.9
 WORKDIR /app
 COPY main.py .
 COPY configure.py .
-# Copy instantclient and wallet
 COPY ./instantclient_zip /app/instantclient_zip/
 COPY ./wallet_zip /app/wallet_zip/
+COPY ./templates /app/templates/
 COPY ./key.txt .
 COPY --from=build-stage /app/build ./build
 
-# Install FastAPI and Uvicorn
-RUN pip install fastapi uvicorn oracledb
+# Install pip dependencies
+RUN pip install fastapi uvicorn oracledb jinja2
 EXPOSE 8000
 
-# Start the FastAPI application with Uvicorn
 CMD ["python3", "main.py"]

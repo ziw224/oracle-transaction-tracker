@@ -7,6 +7,9 @@ logger.setLevel(logging.INFO)
 
 # Create a custom logger
 def setup_logging():
+    '''
+    Setup the logging configuration.
+    '''
     global logger
     logs_dir = "logs"
     if not os.path.exists(logs_dir):        # Create logs directory if it doesn't exist
@@ -21,6 +24,9 @@ def setup_logging():
 
 # read file for passcodes and username
 def read_key():
+    '''
+    Read the key file for the username, password, and wallet password.
+    '''
     global username, password, wallet_pw
     logger.info("////////// KEY FILE //////////")
     with open('key.txt', 'r') as f:
@@ -41,6 +47,9 @@ def read_key():
 
 # unzip instant client zip files
 def unzip_instant_client():
+    '''
+    Unzip the instant client zip files to the current directory.
+    '''
     logger.info("////////// INSTANT CLIENT //////////")
     instantclient_zip_dir = './instantclient_zip'  # Directory where zip files are located
     base_dir = '.'
@@ -78,10 +87,11 @@ def unzip_instant_client():
             os.rename(os.path.join(base_dir, item), instantclient_dir)
             logger.info(f"Renamed {item} to 'instantclient'.")
 
-
-
 # unzip wallet zip files
 def unzip_wallet():
+    '''
+    Unzip the wallet zip files to the wallet directory.
+    '''
     logger.info("////////// WALLET //////////")
     wallet_zip_dir = './wallet_zip'
     wallet_dir = './wallet'  # Directory where the wallet files should be extracted
@@ -109,15 +119,15 @@ def unzip_wallet():
 
 # rewrite sqlnet.ora file
 def rewrite_sqlnet_ora():
+    '''
+    Rewrite the sqlnet.ora file to point to the wallet directory.    
+    '''
     sqlnet_ora_path = './wallet/sqlnet.ora'
     if not os.path.exists(sqlnet_ora_path):             # If the file doesn't exist
         logger.error(f"File {sqlnet_ora_path} does not exist.")
         print(f"File {sqlnet_ora_path} does not exist. Exiting...")
         return
-    # rewrite the file
     with open(sqlnet_ora_path, 'w') as f:
         f.write("WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY=\"./wallet\")))\n")
         f.write("SSL_SERVER_DN_MATCH=yes\n")
     logger.info(f"Rewrote {sqlnet_ora_path} successfully.")
-
-

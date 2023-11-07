@@ -1,10 +1,17 @@
-import oracledb, uvicorn
+import oracledb, uvicorn, os
 from contextlib import asynccontextmanager
 from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, username, password, wallet_pw, logger
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from typing import List
 
 pool = None
+LOGS_DIR = "logs"
+
+# html templating
+templates = Jinja2Templates(directory="templates")
 
 # app = FastAPI(lifespan=lifespan)
 app = FastAPI()
@@ -24,17 +31,17 @@ async def create_db_pool():
             wallet_location="./wallet",  # You can also specify the TNS_ADMIN environment variable instead
             wallet_password=wallet_pw
         )
-        logging.info("Database connection pool created successfully.")
+        logger.info("Database connection pool created successfully.")
     except oracledb.DatabaseError as e:
         error, = e.args
-        logging.error(f"Error connecting to the database: {error.message}")
+        logger.error(f"Error connecting to the database: {error.message}")
         raise
 
 async def close_db_pool():
     global pool
     if pool:
         pool.close()
-        logging.info("Database connection pool closed.")
+        logger.info("Database connection pool closed.")
 
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):
@@ -68,11 +75,38 @@ async def hello():
 
     return {"message": message}
 
+@app.get("/logs", response_class=HTMLResponse)
+async def get_logs(request: Request):
+    """
+    Return an HTML list of log filenames in the logs directory.
+    """
+    try:
+        logs = os.listdir(LOGS_DIR)
+        logs = [log for log in logs if os.path.isfile(os.path.join(LOGS_DIR, log))]
+        return templates.TemplateResponse("log_list.html", {"request": request, "log_files": logs})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/logs/{filename}", name="read_log")
+async def read_log(request: Request, filename: str):
+    """
+    Return the content of the specified log file.
+    """
+    filepath = os.path.join(LOGS_DIR, filename)
+    if os.path.isfile(filepath):
+        try:
+            with open(filepath, "r") as file:
+                content = file.read()
+            return Response(content=content, media_type="text/plain")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="Error reading file.")
+    else:
+        raise HTTPException(status_code=404, detail="File not found.")
+
 # mount build directory
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
 def main():
-    # Here you can invoke any additional setup code, configure logging, etc.
     print("Starting up...")
     setup_logging()
     logger.info("Starting up...")
