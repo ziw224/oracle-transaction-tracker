@@ -1,1 +1,0 @@
-# Place instantclient zip files (basic & sdk) into this directory. The program should auto unzip it.
