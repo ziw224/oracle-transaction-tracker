@@ -1,3 +1,7 @@
+# Setting up instantclient and wallet
+Download the instantclient zip files (basic and sdk) and place them into the instantclient_zip folder.  
+Download the Wallet for the Autonomous Database and place the zip file into the wallet_zip folder.
+
 # Build and Start application
 ```docker build --pull --rm -f "Dockerfile" -t oracletransactiontracker:latest "."```  
 ```docker run --rm -d -p 8000:8000/tcp oracletransactiontracker:latest ```

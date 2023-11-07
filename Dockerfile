@@ -14,11 +14,16 @@ RUN npm run build
 FROM python:3.9
 WORKDIR /app
 COPY main.py .
+COPY configure.py .
+# Copy instantclient and wallet
+COPY ./instantclient_zip /app/instantclient_zip/
+COPY ./wallet_zip /app/wallet_zip/
+COPY ./key.txt .
 COPY --from=build-stage /app/build ./build
 
 # Install FastAPI and Uvicorn
-RUN pip install fastapi uvicorn
+RUN pip install fastapi uvicorn oracledb
 EXPOSE 8000
 
 # Start the FastAPI application with Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3", "main.py"]
