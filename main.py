@@ -11,19 +11,52 @@ from typing import List
 connection = None
 LOGS_DIR = "logs"
 
-# Llifespan event handler to initialize and close the database connection pool
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Initialize the DB pool
-    await create_db_pool()
-    yield
-    # Close the DB pool
-    await close_db_pool()
+# Lifespan event handler to initialize and close the database connection pool
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     # Initialize the DB pool
+#     await create_db_connection()
+#     yield
+#     # Close the DB pool
+#     await close_db_connection()
 
-# app = FastAPI()
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
+# app = FastAPI(lifespan=lifespan)
 # html templating
 templates = Jinja2Templates(directory="templates")
+
+@app.on_event("startup")
+async def startup_event():
+    global connection
+    setup_logging()
+    logger.info("Starting up...")
+    read_key()
+    unzip_instant_client()
+    unzip_wallet()
+
+    try:
+        connection = oracledb.connect(
+            user=username,
+            password=password,
+            dsn="cbdcauto_low",
+            config_dir="./wallet",
+            wallet_location="./wallet",
+            wallet_password=wallet_pw
+        )
+        logger.info("Database connection established.")
+        print(connection.ping())
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        logger.error(f"Error connecting to the database: {error.message}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    global connection
+    if connection:
+        connection.close()
+        logger.info("Database connection closed.")
+
+
 
 @app.exception_handler(Exception)
 async def exception_handler(request: Request, exc: Exception):
@@ -36,7 +69,7 @@ async def exception_handler(request: Request, exc: Exception):
         content={"message": "Internal Server Error"},
     )
 
-async def create_db_pool():
+async def create_db_connection():
     global connection
     try:
         connection = oracledb.connect(
@@ -134,13 +167,13 @@ async def read_log(request: Request, filename: str):
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
 def main():
-    print("Starting up...")
-    setup_logging()
-    logger.info("Starting up...")
-    read_key()
-    unzip_instant_client()
-    unzip_wallet()
-    print("Setup complete. Starting server...")
+    # print("Starting up...")
+    # setup_logging()
+    # logger.info("Starting up...")
+    # read_key()
+    # unzip_instant_client()
+    # unzip_wallet()
+    # print("Setup complete. Starting server...")
     logger.info("////////// SETUP COMPLETE - SERVER STARTING //////////")
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
