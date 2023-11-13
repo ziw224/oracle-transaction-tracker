@@ -28,6 +28,8 @@ async def app_lifespan(app: FastAPI):
     
     logger.info("pre-try block")
     try:
+        logger.info("DB username: " + username)
+        logger.info("DB password: " + password)
         connection = oracledb.connect(
             user=username,
             password=password,
