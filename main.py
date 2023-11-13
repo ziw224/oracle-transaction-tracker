@@ -31,8 +31,7 @@ async def app_lifespan(app: FastAPI):
     
     logger.info("pre-try block")
     try:
-        logger.info("DB username: " + username)
-        logger.info("DB password: " + password)
+        logger.info("Autonomous Database Username: " + username)
         connection = oracledb.connect(
             user=username,
             password=password,
@@ -42,7 +41,7 @@ async def app_lifespan(app: FastAPI):
             wallet_password=wallet_pw
         )
         logger.info("Database connection established.")
-        logger.info("Autonomous Database Version:", connection.version)
+        logger.info("Autonomous Database Version:" + connection.version)
         
     except oracledb.DatabaseError as e:
         error, = e.args
