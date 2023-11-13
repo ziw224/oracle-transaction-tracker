@@ -5,6 +5,20 @@ username, password, wallet_pw = "", "", ""
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+def log(message):
+    '''
+    Log & print a message to the log file.
+    '''
+    logger.info(message)
+    print(message)
+
+def log_error(message):
+    '''
+    Log & print an error message to the log file.
+    '''
+    logger.error(message)
+    print(message)
+
 # Create a custom logger
 def setup_logging():
     '''
@@ -41,8 +55,7 @@ def read_key():
                 wallet_pw = line.split('=')[1].strip()
                 logger.info("Wallet password read from key file")
     if username == "" or password == "" or wallet_pw == "":
-        logger.error("Username, password or wallet password is empty")
-        print("Username, password or wallet password is empty. Exiting...")
+        log("Username, password, or wallet password not found in key file. Exiting...")
         exit(1)
 
 # unzip instant client zip files
@@ -70,14 +83,11 @@ def unzip_instant_client():
                     zip_ref.extractall(base_dir)
                     logger.info(f"Unzipped {item} successfully.")
             except zipfile.BadZipFile:
-                logger.error(f"The file {item} is not a zip file or it is corrupted.")
-                print(f"The file {item} is not a zip file or it is corrupted. Exiting...")
+                log_error(f"The file {item} is not a zip file or it is corrupted.")
             except PermissionError:
-                logger.error(f"The process lacks the necessary permissions to extract {item}.")
-                print(f"The process lacks the necessary permissions to extract {item}. Exiting...")
+                log_error(f"The process lacks the necessary permissions to extract {item}.")
             except Exception as e:
-                logger.error(f"An error occurred while unzipping {item}: {e}")
-                print(f"An error occurred while unzipping {item}: {e}. Exiting...")
+                log_error(f"An error occurred while unzipping {item}: {e}")
     # Rename the unzipped directories by removing the version number
     for item in os.listdir(base_dir):
         if os.path.isdir(os.path.join(base_dir, item)) and item.startswith('instantclient_') and item != 'instantclient_zip':
@@ -107,14 +117,11 @@ def unzip_wallet():
                     zip_ref.extractall(wallet_dir)
                     logger.info(f"Unzipped {item} successfully.")
             except zipfile.BadZipFile:      # If the file is not a zip file or it is corrupted
-                logger.error(f"The file {item} is not a zip file or it is corrupted.")
-                print(f"The file {item} is not a zip file or it is corrupted. Exiting...")
+                log_error(f"The file {item} is not a zip file or it is corrupted.")
             except PermissionError:         # If the process lacks the necessary permissions to extract the file
-                logger.error(f"The process lacks the necessary permissions to extract {item}.")
-                print(f"The process lacks the necessary permissions to extract {item}. Exiting...")
+                log_error(f"The process lacks the necessary permissions to extract {item}.")
             except Exception as e:          # If an error occurs while unzipping the file
-                logger.error(f"An error occurred while unzipping {item}: {e}")
-                print(f"An error occurred while unzipping {item}: {e}. Exiting...")
+                log_error(f"An error occurred while unzipping {item}: {e}")
     rewrite_sqlnet_ora()    # Rewrite sqlnet.ora file
 
 # rewrite sqlnet.ora file
@@ -124,8 +131,7 @@ def rewrite_sqlnet_ora():
     '''
     sqlnet_ora_path = './wallet/sqlnet.ora'
     if not os.path.exists(sqlnet_ora_path):             # If the file doesn't exist
-        logger.error(f"File {sqlnet_ora_path} does not exist.")
-        print(f"File {sqlnet_ora_path} does not exist. Exiting...")
+        log_error(f"File {sqlnet_ora_path} does not exist. Exiting...")
         return
     with open(sqlnet_ora_path, 'w') as f:
         f.write("WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY=\"./wallet\")))\n")
