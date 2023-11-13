@@ -22,7 +22,10 @@ async def app_lifespan(app: FastAPI):
     # Startup logic
     setup_logging()
     logger.info("Starting up...")
-    read_key()
+    credentials = read_key()
+    username = credentials['username']
+    password = credentials['password']
+    wallet_pw = credentials['wallet_pw']
     unzip_instant_client()
     unzip_wallet()
     

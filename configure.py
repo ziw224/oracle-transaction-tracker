@@ -44,19 +44,25 @@ def read_key():
     global username, password, wallet_pw
     logger.info("////////// KEY FILE //////////")
     with open('key.txt', 'r') as f:
+        credentials = {}
         for line in f:
             if line.startswith('username'):
-                username = line.split('=')[1].strip()
-                logger.info("Username read from key file" + username)
+                credentials['username'] = line.split('=')[1].strip()
+                # username = line.split('=')[1].strip()
+                logger.info("Username read from key file" + credentials['username'])
             if line.startswith('password'):
-                password = line.split('=')[1].strip()
-                logger.info("Password read from key file" + password)
+                credentials['password'] = line.split('=')[1].strip()
+                # password = line.split('=')[1].strip()
+                logger.info("Password read from key file" + credentials['password'])
             if line.startswith('wallet_password'):
-                wallet_pw = line.split('=')[1].strip()
-                logger.info("Wallet password read from key file" + wallet_pw)
-    if username == "" or password == "" or wallet_pw == "":
+                credentials['wallet_pw'] = line.split('=')[1].strip()
+                # wallet_pw = line.split('=')[1].strip()
+                logger.info("Wallet password read from key file" + credentials['wallet_pw'])
+    # if username == "" or password == "" or wallet_pw == "":
+    if not all(credentials.values()):
         log("Username, password, or wallet password not found in key file. Exiting...")
-        exit(1)
+        raise ValueError("Username, password, or wallet password not found in key file. Exiting...")
+    return credentials
 
 # unzip instant client zip files
 def unzip_instant_client():
