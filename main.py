@@ -11,17 +11,7 @@ from typing import List
 connection = None
 LOGS_DIR = "logs"
 
-# Lifespan event handler to initialize and close the database connection pool
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     # Initialize the DB pool
-#     await create_db_connection()
-#     yield
-#     # Close the DB pool
-#     await close_db_connection()
-
 app = FastAPI()
-# app = FastAPI(lifespan=lifespan)
 # html templating
 templates = Jinja2Templates(directory="templates")
 
@@ -36,6 +26,7 @@ async def app_lifespan(app: FastAPI):
     unzip_instant_client()
     unzip_wallet()
     
+    logger.info("pre-try block")
     try:
         connection = oracledb.connect(
             user=username,
@@ -46,7 +37,8 @@ async def app_lifespan(app: FastAPI):
             wallet_password=wallet_pw
         )
         logger.info("Database connection established.")
-        print(connection.ping())
+        logger.info("Autonomous Database Version:", connection.version)
+        
     except oracledb.DatabaseError as e:
         error, = e.args
         logger.error(f"Error connecting to the database: {error.message}")
@@ -73,41 +65,41 @@ async def exception_handler(request: Request, exc: Exception):
         content={"message": "Internal Server Error"},
     )
 
-async def create_db_connection():
-    global connection
-    try:
-        connection = oracledb.connect(
-            user=username,
-            password=password,
-            dsn="cbdcauto_low",
-            config_dir="./wallet",
-            wallet_location="./wallet",
-            wallet_password=wallet_pw
-        )
-        logger.info(connection.ping())
-        logger.info("Autonomous Database Version:", connection.version)
-        logger.info("Database connection pool created successfully.")
-    except oracledb.DatabaseError as e:
-        error, = e.args
-        logger.error(f"Error connecting to the database: {error.message}")
-        raise
+# async def create_db_connection():
+#     global connection
+#     try:
+#         connection = oracledb.connect(
+#             user=username,
+#             password=password,
+#             dsn="cbdcauto_low",
+#             config_dir="./wallet",
+#             wallet_location="./wallet",
+#             wallet_password=wallet_pw
+#         )
+#         # logger.info(connection.ping())
+#         logger.info("Autonomous Database Version:", connection.version)
+#         logger.info("Database connection pool created successfully.")
+#     except oracledb.DatabaseError as e:
+#         error, = e.args
+#         logger.error(f"Error connecting to the database: {error.message}")
+#         raise
 
-async def close_db_connection():
-    global connection
-    if connection:
-        connection.close()
-        logger.info("Database connection closed.")
+# async def close_db_connection():
+#     global connection
+#     if connection:
+#         connection.close()
+#         logger.info("Database connection closed.")
 
 @app.get("/test/hello")
 async def hello():
     global connection
     try:
         # Use asyncio.wait_for to set a timeout for acquiring a connection
-        logger.info("Attempting to acquire a connection from the pool.")
+        logger.info("Attempting to acquire a connection.")
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM admin.test_blockchain")
+        cursor.execute("SELECT * FROM admin.test_shard")
         for row in cursor:
-            print(row[0], row[1])
+            print(row[0])
     except asyncio.TimeoutError:
         # Handle the timeout case
         logger.info("Database connection acquisition timed out after 5 seconds.")
