@@ -47,13 +47,13 @@ def read_key():
         for line in f:
             if line.startswith('username'):
                 username = line.split('=')[1].strip()
-                logger.info("Username read from key file")
+                logger.info("Username read from key file" + username)
             if line.startswith('password'):
                 password = line.split('=')[1].strip()
-                logger.info("Password read from key file")
+                logger.info("Password read from key file" + password)
             if line.startswith('wallet_password'):
                 wallet_pw = line.split('=')[1].strip()
-                logger.info("Wallet password read from key file")
+                logger.info("Wallet password read from key file" + wallet_pw)
     if username == "" or password == "" or wallet_pw == "":
         log("Username, password, or wallet password not found in key file. Exiting...")
         exit(1)
