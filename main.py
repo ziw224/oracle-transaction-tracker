@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from typing import List
 
 # Global variables
-pool = None
+connection = None
 LOGS_DIR = "logs"
 
 # Llifespan event handler to initialize and close the database connection pool
@@ -37,44 +37,40 @@ async def exception_handler(request: Request, exc: Exception):
     )
 
 async def create_db_pool():
-    global pool
+    global connection
     try:
-        pool = oracledb.create_pool(
+        connection = oracledb.connect(
             user=username,
             password=password,
             dsn="cbdcauto_low",
-            min=2,
-            max=10,
-            increment=1,
-            encoding="UTF-8",
             config_dir="./wallet",
-            wallet_location="./wallet",  # You can also specify the TNS_ADMIN environment variable instead
+            wallet_location="./wallet",
             wallet_password=wallet_pw
         )
+        logger.info(connection.ping())
+        logger.info("Autonomous Database Version:", connection.version)
         logger.info("Database connection pool created successfully.")
     except oracledb.DatabaseError as e:
         error, = e.args
         logger.error(f"Error connecting to the database: {error.message}")
         raise
 
-async def close_db_pool():
-    global pool
-    if pool:
-        pool.close()
-        logger.info("Database connection pool closed.")
+async def close_db_connection():
+    global connection
+    if connection:
+        connection.close()
+        logger.info("Database connection closed.")
 
 @app.get("/test/hello")
 async def hello():
-    global pool
+    global connection
     try:
         # Use asyncio.wait_for to set a timeout for acquiring a connection
         logger.info("Attempting to acquire a connection from the pool.")
-        async with asyncio.wait_for(pool.acquire(), timeout=5) as conn:
-            logger.info("Got a connection from the pool.")
-            # You would typically perform some database operations here.
-            # For example: `await conn.execute(...)`
-            # For now, we'll just return a success message.
-            message = "Hello World with a database connection!"
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM admin.test_blockchain")
+        for row in cursor:
+            print(row[0], row[1])
     except asyncio.TimeoutError:
         # Handle the timeout case
         logger.info("Database connection acquisition timed out after 5 seconds.")
@@ -92,9 +88,13 @@ async def hello():
             raise HTTPException(status_code=500, detail="Database connection issue.")
     finally:
         # Release the connection back to the pool if acquired
-        if 'conn' in locals():
-            pool.release(conn)
-    return {"message": message}
+        if cursor:
+            logger.info("Releasing cursor.")
+            cursor.close()
+        if connection:
+            logger.info("Releasing connection.")
+            connection.close()
+    return {"message": "Hello World"}
 
 @app.get("/logs", response_class=HTMLResponse)
 async def get_logs(request: Request):
