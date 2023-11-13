@@ -15,6 +15,9 @@ __pycache__
 .old_instantclient
 .old_wallet
 
+# production
+/build
+
 # misc
 .DS_Store
 .env.local
@@ -25,8 +28,6 @@ __pycache__
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-
 wallet_zip/Wallet_CBDCAuto.zip
 instantclient_zip/instantclient-basic-linux.x64-21.12.0.0.0dbru.zip
 instantclient_zip/instantclient-sdk-linux.x64-21.12.0.0.0dbru.zip
