@@ -39,7 +39,7 @@ async def app_lifespan(app: FastAPI):
             wallet_password=wallet_pw
         )
         logger.info("Database connection established.")
-        logger.info("Autonomous Database Version:" + connection.version)
+        logger.info("Autonomous Database Version: " + connection.version)
         
     except oracledb.DatabaseError as e:
         error, = e.args
@@ -53,8 +53,6 @@ async def app_lifespan(app: FastAPI):
         logger.info("Database connection closed.")
 
 app = FastAPI(lifespan=app_lifespan)
-
-
 
 @app.exception_handler(Exception)
 async def exception_handler(request: Request, exc: Exception):
@@ -92,13 +90,9 @@ async def hello():
             logger.error("Database connection issue." + str(e))
             raise HTTPException(status_code=500, detail="Database connection issue.")
     finally:
-        # Release the connection back to the pool if acquired
-        if cursor:
+        if cursor:      # release cursor
             logger.info("Releasing cursor.")
             cursor.close()
-        if connection:
-            logger.info("Releasing connection.")
-            connection.close()
     return {"message": "Hello World"}
 
 @app.get("/logs", response_class=HTMLResponse)
