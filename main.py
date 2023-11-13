@@ -25,15 +25,17 @@ app = FastAPI()
 # html templating
 templates = Jinja2Templates(directory="templates")
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def app_lifespan(app: FastAPI):
     global connection
+
+    # Startup logic
     setup_logging()
     logger.info("Starting up...")
     read_key()
     unzip_instant_client()
     unzip_wallet()
-
+    
     try:
         connection = oracledb.connect(
             user=username,
@@ -49,12 +51,14 @@ async def startup_event():
         error, = e.args
         logger.error(f"Error connecting to the database: {error.message}")
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    global connection
+    yield  # separates the startup and shutdown logic
+
+    # Shutdown
     if connection:
         connection.close()
         logger.info("Database connection closed.")
+
+app = FastAPI(lifespan=app_lifespan)
 
 
 
