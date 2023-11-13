@@ -87,8 +87,8 @@ async def hello():
             raise HTTPException(status_code=400, detail="Database credentials are invalid.")
         else:
             # Generic error handler for database issues
-            print(e)
-            logger.error("Database connection issue." + e)
+            # print(e)
+            logger.error("Database connection issue." + str(e))
             raise HTTPException(status_code=500, detail="Database connection issue.")
     finally:
         # Release the connection back to the pool if acquired
