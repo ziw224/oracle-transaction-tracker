@@ -48,16 +48,16 @@ def read_key():
         for line in f:
             if line.startswith('username'):
                 credentials['username'] = line.split('=')[1].strip()
-                logger.info("Username read from key file" + credentials['username'])
+                logger.info("Username read from key file")
             if line.startswith('password'):
                 credentials['password'] = line.split('=')[1].strip()
-                logger.info("Password read from key file" + credentials['password'])
+                logger.info("Password read from key file")
             if line.startswith('wallet_password'):
                 credentials['wallet_pw'] = line.split('=')[1].strip()
-                logger.info("Wallet password read from key file" + credentials['wallet_pw'])
+                logger.info("Wallet password read from key file")
     if not all(credentials.values()):
-        log("Username, password, or wallet password not found in key file. Exiting...")
-        raise ValueError("Username, password, or wallet password not found in key file. Exiting...")
+        log("Username, password, or wallet password not found in key file.")
+        raise ValueError("Username, password, or wallet password not found in key file.")
     return credentials
 
 # unzip instant client zip files

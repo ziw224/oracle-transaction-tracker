@@ -28,8 +28,6 @@ async def app_lifespan(app: FastAPI):
     wallet_pw = credentials['wallet_pw']
     unzip_instant_client()
     unzip_wallet()
-    
-    logger.info("pre-try block")
     try:
         logger.info("Autonomous Database Username: " + username)
         connection = oracledb.connect(
@@ -69,41 +67,16 @@ async def exception_handler(request: Request, exc: Exception):
         content={"message": "Internal Server Error"},
     )
 
-# async def create_db_connection():
-#     global connection
-#     try:
-#         connection = oracledb.connect(
-#             user=username,
-#             password=password,
-#             dsn="cbdcauto_low",
-#             config_dir="./wallet",
-#             wallet_location="./wallet",
-#             wallet_password=wallet_pw
-#         )
-#         # logger.info(connection.ping())
-#         logger.info("Autonomous Database Version:", connection.version)
-#         logger.info("Database connection pool created successfully.")
-#     except oracledb.DatabaseError as e:
-#         error, = e.args
-#         logger.error(f"Error connecting to the database: {error.message}")
-#         raise
-
-# async def close_db_connection():
-#     global connection
-#     if connection:
-#         connection.close()
-#         logger.info("Database connection closed.")
-
 @app.get("/test/hello")
 async def hello():
     global connection
+    cursor = None
     try:
-        # Use asyncio.wait_for to set a timeout for acquiring a connection
         logger.info("Attempting to acquire a connection.")
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM admin.test_shard")
         for row in cursor:
-            print(row[0])
+            logger.info(row[0])
     except asyncio.TimeoutError:
         # Handle the timeout case
         logger.info("Database connection acquisition timed out after 5 seconds.")
@@ -116,7 +89,6 @@ async def hello():
             raise HTTPException(status_code=400, detail="Database credentials are invalid.")
         else:
             # Generic error handler for database issues
-            # print(e)
             logger.error("Database connection issue." + str(e))
             raise HTTPException(status_code=500, detail="Database connection issue.")
     finally:
