@@ -1,9 +1,9 @@
-import asyncio, oracledb, uvicorn, os
+import asyncio, oracledb, traceback, uvicorn, os
 from contextlib import asynccontextmanager
 from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, username, password, wallet_pw, logger
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from typing import List
 
@@ -24,6 +24,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 # html templating
 templates = Jinja2Templates(directory="templates")
+
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    # Log the stack trace
+    traceback_str = "".join(traceback.format_tb(exc.__traceback__))
+    print(f"Exception caught: {exc}\nStack trace:\n{traceback_str}")
+    logger.error(f"Exception caught: {exc}\nStack trace:\n{traceback_str}")
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Internal Server Error"},
+    )
 
 async def create_db_pool():
     global pool
