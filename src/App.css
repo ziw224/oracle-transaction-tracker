@@ -149,3 +149,10 @@ input[type='number'] {
 .list li:hover .delete-btn {
   opacity: 1;
 }
+
+.admin{
+  background-color: rebeccapurple;
+  .title{
+      color: white
+  }
+}

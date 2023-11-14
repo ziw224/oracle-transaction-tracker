@@ -1,9 +1,12 @@
-import React from 'react'
+import { AdminSidebar } from "../../components/AdminSidebar"
+import "../../App.css";
 
 export const Admin = () => {
   return (
-    <div>Admin</div>
-  )
-}
+    <div className="admin">
+      <AdminSidebar />
+    </div>
+  );
+};
 
 export default Admin;
