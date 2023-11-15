@@ -57,13 +57,6 @@
         <h1>Test Shard Table</h1>
         {% if rows %}
             <table>
-                <thead>
-                    <tr>
-                        {% for header in rows[0] %}
-                            <th>{{ header }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
                 <tbody>
                     {% for row in rows %}
                         <tr>
