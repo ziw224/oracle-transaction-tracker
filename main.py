@@ -91,7 +91,7 @@ async def hello():
             cursor.close()
     return {"message": "Hello World"}
 
-@app.post("/run-docker")
+@app.get("/run-docker")
 def run_docker():
     try:
         # Pull the image if not already present
