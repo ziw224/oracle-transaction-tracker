@@ -135,7 +135,7 @@ async def get_test_shard(request: Request):
 @app.get("/table/shard_data", response_class=HTMLResponse)
 async def get_shard_data(request: Request):
     """
-    Return the contents of the test_shard table.
+    Return the contents of the shard_data table.
     """
     cursor = None
     try:
@@ -154,6 +154,44 @@ async def get_shard_data(request: Request):
             "rows": rows,
             "columns": columns,
             "table_title": "shard_data Table"
+        })
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        if error.code == 1017:
+            # ORA-01017: invalid username/password; logon denied
+            logger.error("Database credentials are invalid.")
+            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
+        else:
+            # Generic error handler for database issues
+            logger.error("Database connection issue." + str(e))
+            raise HTTPException(status_code=500, detail="Database connection issue.")
+    finally:
+        if cursor:      # release cursor
+            logger.info("Releasing cursor on /table/test_shard endpoint.")
+            cursor.close()
+
+@app.get("/table/sentinel", response_class=HTMLResponse)
+async def get_sentinel(request: Request):
+    """
+    Return the contents of the sentinel table.
+    """
+    cursor = None
+    try:
+        logger.info("Getting database connection for /table/sentinel endpoint.")
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM admin.sentinel")
+        columns = [col[0] for col in cursor.description]
+        rows = []
+        for row in cursor:
+            # Convert the bytestring to hexadecimal representation
+            hex_data = row[0].hex().upper() if row[0] else None
+            # Append the converted hex_data and the timestamp_col to the rows list
+            rows.append((hex_data, row[1], row[2]))
+        return templates.TemplateResponse("table.html", {
+            "request": request, 
+            "rows": rows,
+            "columns": columns,
+            "table_title": "sentinel Table"
         })
     except oracledb.DatabaseError as e:
         error, = e.args
