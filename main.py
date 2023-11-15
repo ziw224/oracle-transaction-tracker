@@ -1,25 +1,23 @@
 import asyncio, oracledb, traceback, uvicorn, os
 from contextlib import asynccontextmanager
-from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, username, password, wallet_pw, logger
+from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, logger
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from typing import List
+# from typing import List
 
 # Global variables
 connection = None
 LOGS_DIR = "logs"
-
 app = FastAPI()
-# html templating
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")  # html templating
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     global connection
 
-    # Startup logic
+    # Startup
     setup_logging()
     logger.info("Starting up...")
     credentials = read_key()
@@ -28,6 +26,8 @@ async def app_lifespan(app: FastAPI):
     wallet_pw = credentials['wallet_pw']
     unzip_instant_client()
     unzip_wallet()
+    logger.info("////////// SETUP COMLETE //////////")
+    logger.info("Attemping to connect to the database.")
     try:
         logger.info("Autonomous Database Username: " + username)
         connection = oracledb.connect(
@@ -60,21 +60,21 @@ async def exception_handler(request: Request, exc: Exception):
     traceback_str = "".join(traceback.format_tb(exc.__traceback__))
     print(f"Exception caught: {exc}\nStack trace:\n{traceback_str}")
     logger.error(f"Exception caught: {exc}\nStack trace:\n{traceback_str}")
-    return JSONResponse(
-        status_code=500,
-        content={"message": "Internal Server Error"},
-    )
+    return templates.TemplateResponse("error.html", {
+        "request": request,
+        "message": "Internal Server Error. Check the logs endpoint for more details."
+    }, status_code=500)
 
 @app.get("/test/hello")
 async def hello():
     global connection
     cursor = None
     try:
-        logger.info("Attempting to acquire a connection.")
+        logger.info("Getting database connection for /test/hello endpoint.")
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM admin.test_shard")
-        for row in cursor:
-            logger.info(row[0])
+        # cursor.execute("SELECT * FROM admin.test_shard")
+        # for row in cursor:
+        #     logger.info(row[0])
     except asyncio.TimeoutError:
         # Handle the timeout case
         logger.info("Database connection acquisition timed out after 5 seconds.")
@@ -91,9 +91,36 @@ async def hello():
             raise HTTPException(status_code=500, detail="Database connection issue.")
     finally:
         if cursor:      # release cursor
-            logger.info("Releasing cursor.")
+            logger.info("Releasing cursor on /test/hello endpoint.")
             cursor.close()
     return {"message": "Hello World"}
+
+@app.get("/table/test_shard", response_class=HTMLResponse)
+async def get_test_shard(request: Request):
+    """
+    Return the contents of the test_shard table.
+    """
+    cursor = None
+    try:
+        logger.info("Getting database connection for /table/test_shard endpoint.")
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM admin.test_shard")
+        rows = cursor.fetchall()
+        return templates.TemplateResponse("table.html", {"request": request, "rows": rows})
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        if error.code == 1017:
+            # ORA-01017: invalid username/password; logon denied
+            logger.error("Database credentials are invalid.")
+            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
+        else:
+            # Generic error handler for database issues
+            logger.error("Database connection issue." + str(e))
+            raise HTTPException(status_code=500, detail="Database connection issue.")
+    finally:
+        if cursor:      # release cursor
+            logger.info("Releasing cursor on /table/test_shard endpoint.")
+            cursor.close()
 
 @app.get("/logs", response_class=HTMLResponse)
 async def get_logs(request: Request):
@@ -133,15 +160,7 @@ async def read_log(request: Request, filename: str):
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
 def main():
-    # print("Starting up...")
-    # setup_logging()
-    # logger.info("Starting up...")
-    # read_key()
-    # unzip_instant_client()
-    # unzip_wallet()
-    # print("Setup complete. Starting server...")
-    logger.info("////////// SETUP COMPLETE - SERVER STARTING //////////")
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host="0.0.0.0", port=8000)

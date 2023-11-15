@@ -1,7 +1,6 @@
 import os, zipfile, logging, shutil
 from datetime import datetime
 
-username, password, wallet_pw = "", "", ""
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -41,7 +40,6 @@ def read_key():
     '''
     Read the key file for the username, password, and wallet password.
     '''
-    global username, password, wallet_pw
     logger.info("////////// KEY FILE //////////")
     with open('key.txt', 'r') as f:
         credentials = {}
