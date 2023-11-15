@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,14 +13,17 @@
             padding: 20px;
             color: #333;
         }
+
         h1 {
             color: #444;
             text-align: center;
         }
+
         ul {
             list-style-type: none;
             padding: 0;
         }
+
         li {
             margin: 5px 0;
             padding: 10px;
@@ -27,32 +31,37 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+
         a {
             text-decoration: none;
             color: #5D5C61;
             font-weight: bold;
         }
+
         a:hover {
             color: #557A95;
         }
+
         .container {
             width: 80%;
             margin: auto;
             background-color: #ffffff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px 0 rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Log Files</h1>
         <ul>
             {% for filename in log_files %}
-                <li><a href="{{ url_for('read_log', filename=filename) }}">{{ filename }}</a></li>
+            <li><a href="{{ url_for('read_log', filename=filename) }}">{{ filename }}</a></li>
             {% endfor %}
         </ul>
     </div>
 </body>
+
 </html>
