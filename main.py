@@ -5,6 +5,8 @@ from fastapi import FastAPI, HTTPException, Request, Response, Path
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # Global variables
 connection, container = None, None
@@ -12,6 +14,16 @@ LOGS_DIR = "logs"
 app = FastAPI()
 docker_client = docker.from_env()
 templates = Jinja2Templates(directory="templates")  # html templating
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
