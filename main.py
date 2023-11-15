@@ -94,14 +94,11 @@ async def hello():
 @app.get("/run-docker")
 def run_docker():
     try:
-        # Pull the image if not already present
-        docker_client.images.pull('opencbdc-tx-twophase')
-
         # Run the container
         container = docker_client.containers.run(
-            "opencbdc-tx-twophase",
-            "/bin/bash",
+            "ghcr.io/mit-dci/opencbdc-tx-twophase",
             network="2pc-network",
+            command="/bin/bash",
             stdin_open=True,
             tty=True,
             detach=True
