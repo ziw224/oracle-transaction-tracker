@@ -109,7 +109,10 @@ async def hello():
     return {"message": "Hello World"}
 
 @app.get("/mint-tokens")
-def run_docker():
+def mint_tokens():
+    """
+    Mint tokens.
+    """
     try:
         # Execute a command inside the running container
         exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5'")
@@ -117,7 +120,20 @@ def run_docker():
         return {"output": exec_output.decode('utf-8')}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+    
+@app.get("/inspect-wallet")
+def inspect_wallet():
+    """
+    Return wallet information.
+    """
+    try:
+        # Execute a command inside the running container
+        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat info'")
+        exec_output = docker_client.api.exec_start(exec_id)
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @app.get("/table/test_shard", response_class=HTMLResponse)
 async def get_test_shard(request: Request):
     """
