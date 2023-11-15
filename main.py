@@ -105,7 +105,11 @@ async def get_test_shard(request: Request):
         logger.info("Getting database connection for /table/test_shard endpoint.")
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM admin.test_shard")
-        rows = cursor.fetchall()
+        rows = []
+        for row in cursor:
+            row_str = ', '.join(map(str, row))
+            logger.info(row_str)
+            rows.append(row)
         return templates.TemplateResponse("table.html", {"request": request, "rows": rows})
     except oracledb.DatabaseError as e:
         error, = e.args
