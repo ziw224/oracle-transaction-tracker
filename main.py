@@ -112,7 +112,7 @@ async def hello():
 def run_docker():
     try:
         # Execute a command inside the running container
-        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c ./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5")
+        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5'")
         exec_output = docker_client.api.exec_start(exec_id)
         return {"output": exec_output.decode('utf-8')}
     except docker.errors.DockerException as e:
