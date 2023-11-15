@@ -1,4 +1,4 @@
-import asyncio, oracledb, traceback, uvicorn, os
+import docker, oracledb, traceback, uvicorn, os
 from contextlib import asynccontextmanager
 from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, logger
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 connection = None
 LOGS_DIR = "logs"
 app = FastAPI()
+docker_client = docker.from_env()
 templates = Jinja2Templates(directory="templates")  # html templating
 
 @asynccontextmanager
@@ -74,10 +75,6 @@ async def hello():
         # cursor.execute("SELECT * FROM admin.test_shard")
         # for row in cursor:
         #     logger.info(row[0])
-    except asyncio.TimeoutError:
-        # Handle the timeout case
-        logger.info("Database connection acquisition timed out after 5 seconds.")
-        raise HTTPException(status_code=500, detail="Database connection acquisition timed out.")
     except oracledb.DatabaseError as e:
         error, = e.args
         if error.code == 1017:
@@ -93,6 +90,33 @@ async def hello():
             logger.info("Releasing cursor on /test/hello endpoint.")
             cursor.close()
     return {"message": "Hello World"}
+
+@app.post("/run-docker")
+def run_docker():
+    try:
+        # Pull the image if not already present
+        docker_client.images.pull('opencbdc-tx-twophase')
+
+        # Run the container
+        container = docker_client.containers.run(
+            "opencbdc-tx-twophase",
+            "/bin/bash",
+            network="2pc-network",
+            stdin_open=True,
+            tty=True,
+            detach=True
+        )
+
+        # Execute a command inside the running container
+        exec_id = docker_client.api.exec_create(container.id, "echo 'Hello from inside the container!'")
+        exec_output = docker_client.api.exec_start(exec_id)
+        
+        # Stop the container after executing the command
+        container.stop()
+
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/table/test_shard", response_class=HTMLResponse)
 async def get_test_shard(request: Request):
