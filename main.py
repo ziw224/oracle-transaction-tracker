@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 # Global variables
-connection = None
+connection, container = None, None
 LOGS_DIR = "logs"
 app = FastAPI()
 docker_client = docker.from_env()
@@ -15,7 +15,7 @@ templates = Jinja2Templates(directory="templates")  # html templating
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
-    global connection
+    global connection, container
 
     # Startup
     setup_logging()
@@ -40,10 +40,23 @@ async def app_lifespan(app: FastAPI):
         )
         logger.info("Database connection established.")
         logger.info("Autonomous Database Version: " + connection.version)
+
+        # Run the container
+        container = docker_client.containers.run(
+            "ghcr.io/mit-dci/opencbdc-tx-twophase",
+            network="2pc-network",
+            command="/bin/bash",
+            stdin_open=True,
+            tty=True,
+            detach=True
+        )
+        logger.info("Connected to wallet docker container.")
         
     except oracledb.DatabaseError as e:
         error, = e.args
         logger.error(f"Error connecting to the database: {error.message}")
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     yield  # separates the startup and shutdown logic
 
@@ -51,6 +64,10 @@ async def app_lifespan(app: FastAPI):
     if connection:
         connection.close()
         logger.info("Database connection closed.")
+    # closing container
+    if container:
+        container.stop()
+        logger.info("Disconnected to wallet docker container stopped.")
 
 app = FastAPI(lifespan=app_lifespan)
 
@@ -91,26 +108,12 @@ async def hello():
             cursor.close()
     return {"message": "Hello World"}
 
-@app.get("/run-docker")
+@app.get("/mint-tokens")
 def run_docker():
     try:
-        # Run the container
-        container = docker_client.containers.run(
-            "ghcr.io/mit-dci/opencbdc-tx-twophase",
-            network="2pc-network",
-            command="/bin/bash",
-            stdin_open=True,
-            tty=True,
-            detach=True
-        )
-
         # Execute a command inside the running container
-        exec_id = docker_client.api.exec_create(container.id, "echo 'Hello from inside the container!'")
+        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c ./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5")
         exec_output = docker_client.api.exec_start(exec_id)
-        
-        # Stop the container after executing the command
-        container.stop()
-
         return {"output": exec_output.decode('utf-8')}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))

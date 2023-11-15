@@ -4,7 +4,7 @@ Download the Wallet for the Autonomous Database and place the zip file into the 
 
 # Build and Start application
 ```docker build --pull --rm -f "Dockerfile" -t oracletransactiontracker:latest "."```  
-```docker run --rm -d -p 8000:8000/tcp oracletransactiontracker:latest ```
+```docker run --rm -d -p 8000:8000/tcp -v /var/run/docker.sock:/var/run/docker.sock oracletransactiontracker:latest ```
 
 # Getting Started with Create React App
 
