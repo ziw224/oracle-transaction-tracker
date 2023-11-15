@@ -1,7 +1,7 @@
 import docker, oracledb, traceback, uvicorn, os
 from contextlib import asynccontextmanager
 from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, logger
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, Path
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -109,12 +109,11 @@ async def hello():
     return {"message": "Hello World"}
 
 @app.get("/mint-tokens")
-def mint_tokens():
+async def mint_tokens():
     """
     Mint tokens.
     """
     try:
-        # Execute a command inside the running container
         exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5'")
         exec_output = docker_client.api.exec_start(exec_id)
         return {"output": exec_output.decode('utf-8')}
@@ -122,18 +121,42 @@ def mint_tokens():
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.get("/inspect-wallet")
-def inspect_wallet():
+async def inspect_wallet():
     """
     Return wallet information.
     """
     try:
-        # Execute a command inside the running container
         exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat info'")
         exec_output = docker_client.api.exec_start(exec_id)
         return {"output": exec_output.decode('utf-8')}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@app.get("/new-wallet")
+async def new_wallet():
+    """
+    Return new wallet information.
+    """
+    try:
+        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool1.dat wallet1.dat newaddress'")
+        exec_output = docker_client.api.exec_start(exec_id)
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/send-tokens/{address}")
+async def send_tokens(address: str = Path(..., title="The address to send tokens to")):
+    """
+    Send tokens to another wallet.
+    """
+    try:
+        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat send 30 {address}"
+        exec_id = docker_client.api.exec_create(container.id, ["/bin/bash", "-c", command])
+        exec_output = docker_client.api.exec_start(exec_id)
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/table/test_shard", response_class=HTMLResponse)
 async def get_test_shard(request: Request):
     """
