@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Shard Table</title>
+    <title>Tables</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -54,23 +54,31 @@
 
 <body>
     <div class="table-container">
+
         <body>
             <div class="table-container">
                 <h1>{{ table_title }}</h1>
                 {% if rows %}
-                    <table>
-                        <tbody>
-                            {% for row in rows %}
-                                <tr>
-                                    {% for cell in row %}
-                                        <td>{{ cell }}</td>
-                                    {% endfor %}
-                                </tr>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for column in columns %}
+                            <th>{{ column }}</th>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            {% for cell in row %}
+                            <td>{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
                 {% else %}
-                    <p>No data available to display.</p>
+                <p>No data available to display.</p>
                 {% endif %}
             </div>
         </body>
