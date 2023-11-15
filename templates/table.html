@@ -55,24 +55,32 @@
 <body>
     <div class="table-container">
         <h1>Test Shard Table</h1>
+        {% if rows %} <!-- Check if there are rows to display -->
         <table>
             <thead>
                 <tr>
+                    {% if rows[0] is mapping %} <!-- Check if the first row is a dictionary -->
                     {% for column in rows[0].keys() %}
                     <th>{{ column }}</th>
                     {% endfor %}
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for row in rows %}
                 <tr>
-                    {% for cell in row %}
+                    {% if row is mapping %} <!-- Check if the row is a dictionary -->
+                    {% for cell in row.values() %} <!-- Use .values() to get the values -->
                     <td>{{ cell }}</td>
                     {% endfor %}
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <p>No data available to display.</p>
+        {% endif %}
     </div>
 </body>
 
