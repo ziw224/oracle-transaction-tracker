@@ -4,6 +4,7 @@ import { GlobalContext } from "../context/GlobalState";
 export const AddTransaction = () => {
 
   const [text, setText] = useState("");
+  const [name, setName] = useState("");
   const [amount, setAmount] = useState(0);
 
   const {addTransaction} = useContext(GlobalContext);
@@ -13,6 +14,7 @@ export const AddTransaction = () => {
     const newTransaction = {
       id: Math.floor(Math.random()*100000000),
       text,
+      name,
       amount: +amount // turing "amount" into a number
     }
     addTransaction(newTransaction);
@@ -30,6 +32,15 @@ export const AddTransaction = () => {
             value={text}
             onChange={(event) => setText(event.target.value)}
             placeholder="Enter text..."
+          />
+        </div>
+        <div className="form-control">
+          <label htmlFor="user2">User2</label>
+          <input
+            type="user2"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Enter user name..."
           />
         </div>
         <div className="form-control">
