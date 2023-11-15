@@ -54,23 +54,26 @@
 
 <body>
     <div class="table-container">
-        <h1>Test Shard Table</h1>
-        {% if rows %}
-            <table>
-                <tbody>
-                    {% for row in rows %}
-                        <tr>
-                            {% for cell in row %}
-                                <td>{{ cell }}</td>
+        <body>
+            <div class="table-container">
+                <h1>{{ table_title }}</h1>
+                {% if rows %}
+                    <table>
+                        <tbody>
+                            {% for row in rows %}
+                                <tr>
+                                    {% for cell in row %}
+                                        <td>{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
                             {% endfor %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No data available to display.</p>
-        {% endif %}
-    </div>
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No data available to display.</p>
+                {% endif %}
+            </div>
+        </body>
 </body>
 
 
