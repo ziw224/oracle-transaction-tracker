@@ -5,7 +5,6 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-# from typing import List
 
 # Global variables
 connection = None
@@ -185,7 +184,6 @@ async def get_sentinel(request: Request):
         for row in cursor:
             # Convert the bytestring to hexadecimal representation
             hex_data = row[0].hex().upper() if row[0] else None
-            # Append the converted hex_data and the timestamp_col to the rows list
             rows.append((hex_data, row[1], row[2]))
         return templates.TemplateResponse("table.html", {
             "request": request, 
