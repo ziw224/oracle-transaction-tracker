@@ -1,20 +1,21 @@
-import asyncio, oracledb, traceback, uvicorn, os
+import docker, oracledb, traceback, uvicorn, os
 from contextlib import asynccontextmanager
 from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, logger
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, Path
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 # Global variables
-connection = None
+connection, container = None, None
 LOGS_DIR = "logs"
 app = FastAPI()
+docker_client = docker.from_env()
 templates = Jinja2Templates(directory="templates")  # html templating
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
-    global connection
+    global connection, container
 
     # Startup
     setup_logging()
@@ -39,10 +40,23 @@ async def app_lifespan(app: FastAPI):
         )
         logger.info("Database connection established.")
         logger.info("Autonomous Database Version: " + connection.version)
+
+        # Run the container
+        container = docker_client.containers.run(
+            "ghcr.io/mit-dci/opencbdc-tx-twophase",
+            network="2pc-network",
+            command="/bin/bash",
+            stdin_open=True,
+            tty=True,
+            detach=True
+        )
+        logger.info("Connected to wallet docker container.")
         
     except oracledb.DatabaseError as e:
         error, = e.args
         logger.error(f"Error connecting to the database: {error.message}")
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     yield  # separates the startup and shutdown logic
 
@@ -50,6 +64,10 @@ async def app_lifespan(app: FastAPI):
     if connection:
         connection.close()
         logger.info("Database connection closed.")
+    # closing container
+    if container:
+        container.stop()
+        logger.info("Disconnected to wallet docker container stopped.")
 
 app = FastAPI(lifespan=app_lifespan)
 
@@ -74,10 +92,6 @@ async def hello():
         # cursor.execute("SELECT * FROM admin.test_shard")
         # for row in cursor:
         #     logger.info(row[0])
-    except asyncio.TimeoutError:
-        # Handle the timeout case
-        logger.info("Database connection acquisition timed out after 5 seconds.")
-        raise HTTPException(status_code=500, detail="Database connection acquisition timed out.")
     except oracledb.DatabaseError as e:
         error, = e.args
         if error.code == 1017:
@@ -93,6 +107,55 @@ async def hello():
             logger.info("Releasing cursor on /test/hello endpoint.")
             cursor.close()
     return {"message": "Hello World"}
+
+@app.get("/mint-tokens")
+async def mint_tokens():
+    """
+    Mint tokens.
+    """
+    try:
+        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5'")
+        exec_output = docker_client.api.exec_start(exec_id)
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/inspect-wallet")
+async def inspect_wallet():
+    """
+    Return wallet information.
+    """
+    try:
+        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat info'")
+        exec_output = docker_client.api.exec_start(exec_id)
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/new-wallet")
+async def new_wallet():
+    """
+    Return new wallet information.
+    """
+    try:
+        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool1.dat wallet1.dat newaddress'")
+        exec_output = docker_client.api.exec_start(exec_id)
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/send-tokens/{address}")
+async def send_tokens(address: str = Path(..., title="The address to send tokens to")):
+    """
+    Send tokens to another wallet.
+    """
+    try:
+        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat send 30 {address}"
+        exec_id = docker_client.api.exec_create(container.id, ["/bin/bash", "-c", command])
+        exec_output = docker_client.api.exec_start(exec_id)
+        return {"output": exec_output.decode('utf-8')}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/table/test_shard", response_class=HTMLResponse)
 async def get_test_shard(request: Request):
