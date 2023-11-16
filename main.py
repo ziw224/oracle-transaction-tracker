@@ -116,7 +116,9 @@ async def mint_tokens():
     try:
         exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5'")
         exec_output = docker_client.api.exec_start(exec_id)
-        return {"output": exec_output.decode('utf-8')}
+        output_lines = exec_output.decode('utf-8').strip().split("\n")  # Split the output by new lines (\n)
+        output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
+        return {"output": output_dict}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -128,7 +130,7 @@ async def inspect_wallet():
     try:
         exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat info'")
         exec_output = docker_client.api.exec_start(exec_id)
-        return {"output": exec_output.decode('utf-8')}
+        return {"output": exec_output.decode('utf-8').strip().split("\n")}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -140,7 +142,9 @@ async def new_wallet():
     try:
         exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool1.dat wallet1.dat newaddress'")
         exec_output = docker_client.api.exec_start(exec_id)
-        return {"output": exec_output.decode('utf-8')}
+        output_lines = exec_output.decode('utf-8').strip().split("\n")  # Split the output by new lines (\n)
+        output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
+        return {"output": output_dict}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -153,7 +157,9 @@ async def send_tokens(address: str = Path(..., title="The address to send tokens
         command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat send 30 {address}"
         exec_id = docker_client.api.exec_create(container.id, ["/bin/bash", "-c", command])
         exec_output = docker_client.api.exec_start(exec_id)
-        return {"output": exec_output.decode('utf-8')}
+        output_lines = exec_output.decode('utf-8').strip().split("\n")
+        output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
+        return {"output": output_dict}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
 
