@@ -45,7 +45,8 @@ async def app_lifespan(app: FastAPI):
         connection = oracledb.connect(
             user=username,
             password=password,
-            dsn="cbdcauto_low",
+            # dsn="cbdcauto_low",
+            dsn="lw41k4xzf2od0kvy_low",
             config_dir="./wallet",
             wallet_location="./wallet",
             wallet_password=wallet_pw
