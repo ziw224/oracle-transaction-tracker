@@ -450,7 +450,42 @@ async def get_transaction(request: Request):
             logger.info("Releasing cursor on /table/uhs endpoint.")
             cursor.close()
 
-
+@app.get("/table/test", response_class=HTMLResponse)
+async def get_test_table(request: Request):
+    """
+    Return the contents of the uhs table.
+    """
+    cursor = None
+    try:
+        logger.info("Getting database connection for /table/test endpoint.")
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM admin.test_table")
+        columns = [col[0] for col in cursor.description]
+        rows = []
+        for row in cursor:
+            # Convert the bytestring to hexadecimal representation
+            hex_data = row[0].hex().upper() if row[0] else None
+            rows.append((hex_data, row[1], row[2]))
+        return templates.TemplateResponse("table.html", {
+            "request": request, 
+            "rows": rows,
+            "columns": columns,
+            "table_title": "Test Table"
+        })
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        if error.code == 1017:
+            # ORA-01017: invalid username/password; logon denied
+            logger.error("Database credentials are invalid.")
+            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
+        else:
+            # Generic error handler for database issues
+            logger.error("Database connection issue." + str(e))
+            raise HTTPException(status_code=500, detail="Database connection issue.")
+    finally:
+        if cursor:      # release cursor
+            logger.info("Releasing cursor on /table/test endpoint.")
+            cursor.close()
 
 
 
