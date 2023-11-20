@@ -301,7 +301,7 @@ async def get_sentinel(request: Request):
 
 
 
-@app.get("/table/input", response_class=HTMLResponse)
+@app.get("/table/input")
 async def get_input(request: Request):
     """
     Return the contents of the test_shard table.
@@ -317,6 +317,8 @@ async def get_input(request: Request):
             # row_str = ', '.join(map(str, row))
             # logger.info(row_str)
             rows.append(row)
+        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
             "request": request, 
             "rows": rows,
@@ -338,7 +340,7 @@ async def get_input(request: Request):
             logger.info("Releasing cursor on /table/input endpoint.")
             cursor.close()
 
-@app.get("/table/output", response_class=HTMLResponse)
+@app.get("/table/output")
 async def get_output(request: Request):
     """
     Return the contents of the output table.
@@ -355,6 +357,8 @@ async def get_output(request: Request):
             hex_data = row[0].hex().upper() if row[0] else None
             # Append the converted hex_data and the timestamp_col to the rows list
             rows.append((hex_data, row[1]))
+        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
             "request": request, 
             "rows": rows,
@@ -376,7 +380,7 @@ async def get_output(request: Request):
             logger.info("Releasing cursor on /table/output endpoint.")
             cursor.close()
 
-@app.get("/table/transaction", response_class=HTMLResponse)
+@app.get("/table/transaction")
 async def get_transaction(request: Request):
     """
     Return the contents of the transaction table.
@@ -392,6 +396,8 @@ async def get_transaction(request: Request):
             # Convert the bytestring to hexadecimal representation
             hex_data = row[0].hex().upper() if row[0] else None
             rows.append((hex_data, row[1], row[2]))
+        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
             "request": request, 
             "rows": rows,
@@ -413,7 +419,7 @@ async def get_transaction(request: Request):
             logger.info("Releasing cursor on /table/transaction endpoint.")
             cursor.close()
 
-@app.get("/table/uhs", response_class=HTMLResponse)
+@app.get("/table/uhs")
 async def get_transaction(request: Request):
     """
     Return the contents of the uhs table.
@@ -429,6 +435,8 @@ async def get_transaction(request: Request):
             # Convert the bytestring to hexadecimal representation
             hex_data = row[0].hex().upper() if row[0] else None
             rows.append((hex_data, row[1], row[2]))
+        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
             "request": request, 
             "rows": rows,
@@ -450,10 +458,10 @@ async def get_transaction(request: Request):
             logger.info("Releasing cursor on /table/uhs endpoint.")
             cursor.close()
 
-@app.get("/table/test", response_class=HTMLResponse)
+@app.get("/table/test")
 async def get_test_table(request: Request):
     """
-    Return the contents of the uhs table.
+    Return the contents of the test_table table.
     """
     cursor = None
     try:
@@ -464,8 +472,9 @@ async def get_test_table(request: Request):
         rows = []
         for row in cursor:
             # Convert the bytestring to hexadecimal representation
-            # hex_data = row[0].hex().upper() if row[0] else None
             rows.append((row[0], row[1], row[2]))
+        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
             "request": request, 
             "rows": rows,
