@@ -58,7 +58,6 @@
         <body>
             <div class="table-container">
                 <h1>{{ table_title }}</h1>
-                {% if rows %}
                 <table>
                     <thead>
                         <tr>
@@ -67,6 +66,7 @@
                             {% endfor %}
                         </tr>
                     </thead>
+                    {% if rows %}
                     <tbody>
                         {% for row in rows %}
                         <tr>
@@ -76,10 +76,10 @@
                         </tr>
                         {% endfor %}
                     </tbody>
+                    {% else %}
+                    <p>No data in table.</p>
+                    {% endif %}
                 </table>
-                {% else %}
-                <p>No data available to display.</p>
-                {% endif %}
             </div>
         </body>
 </body>
