@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from docker.errors import NotFound
 
 
 # Global variables
@@ -63,11 +64,14 @@ async def app_lifespan(app: FastAPI):
             tty=True,
             detach=True
         )
-        logger.info("Connected to wallet docker container.")
-        
+        logger.info(f"Connected to wallet docker container {container.short_id}.") 
     except oracledb.DatabaseError as e:
         error, = e.args
         logger.error(f"Error connecting to the database: {error.message}")
+    except NotFound as e:
+        # Handle the NotFound error
+        print(f"Error: {e.explanation}")
+        raise HTTPException(status_code=404, detail="Docker network not found.")
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
 
