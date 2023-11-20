@@ -464,8 +464,8 @@ async def get_test_table(request: Request):
         rows = []
         for row in cursor:
             # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            rows.append((hex_data, row[1], row[2]))
+            # hex_data = row[0].hex().upper() if row[0] else None
+            rows.append(row[0], row[1], row[2])
         return templates.TemplateResponse("table.html", {
             "request": request, 
             "rows": rows,
