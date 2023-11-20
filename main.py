@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from configure import setup_logging, read_key, unzip_instant_client, unzip_wallet, logger
 from fastapi import FastAPI, HTTPException, Request, Response, Path
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from docker.errors import NotFound
@@ -128,7 +128,7 @@ async def hello():
 ############
 # COMMANDS #
 ############
-@app.get("/mint-tokens")
+@app.get("/command/mint-tokens")
 async def mint_tokens():
     """
     Mint tokens.
@@ -142,7 +142,7 @@ async def mint_tokens():
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/inspect-wallet")
+@app.get("/command/inspect-wallet")
 async def inspect_wallet():
     """
     Return wallet information.
@@ -154,7 +154,7 @@ async def inspect_wallet():
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/new-wallet")
+@app.get("/command/new-wallet")
 async def new_wallet():
     """
     Return new wallet information.
@@ -168,7 +168,7 @@ async def new_wallet():
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/send-tokens/{address}")
+@app.get("/command/send-tokens/{address}")
 async def send_tokens(address: str = Path(..., title="The address to send tokens to")):
     """
     Send tokens to another wallet.
@@ -531,6 +531,10 @@ async def read_log(request: Request, filename: str):
             raise HTTPException(status_code=500, detail="Error reading file.")
     else:
         raise HTTPException(status_code=404, detail="File not found.")
+    
+@app.get("/{full_path:path}", include_in_schema=False)
+async def catch_all(full_path: str):
+    return FileResponse('build/index.html')
 
 # mount build directory
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
