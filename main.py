@@ -16,16 +16,6 @@ app = FastAPI()
 docker_client = docker.from_env()
 templates = Jinja2Templates(directory="templates")  # html templating
 
-origins = ["*"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     global connection, container
@@ -87,6 +77,15 @@ async def app_lifespan(app: FastAPI):
         logger.info("Disconnected to wallet docker container stopped.")
 
 app = FastAPI(lifespan=app_lifespan)
+
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.exception_handler(Exception)
 async def exception_handler(request: Request, exc: Exception):
@@ -186,121 +185,6 @@ async def send_tokens(address: str = Path(..., title="The address to send tokens
 #############
 # ENDPOINTS #
 #############
-@app.get("/table/test_shard", response_class=HTMLResponse)
-async def get_test_shard(request: Request):
-    """
-    Return the contents of the test_shard table.
-    """
-    cursor = None
-    try:
-        logger.info("Getting database connection for /table/test_shard endpoint.")
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM admin.test_shard")
-        columns = [col[0] for col in cursor.description]
-        rows = []
-        for row in cursor:
-            # row_str = ', '.join(map(str, row))
-            # logger.info(row_str)
-            rows.append(row)
-        return templates.TemplateResponse("table.html", {
-            "request": request, 
-            "rows": rows,
-            "columns": columns,
-            "table_title": "test_shard Table"
-        })
-    except oracledb.DatabaseError as e:
-        error, = e.args
-        if error.code == 1017:
-            # ORA-01017: invalid username/password; logon denied
-            logger.error("Database credentials are invalid.")
-            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
-        else:
-            # Generic error handler for database issues
-            logger.error("Database connection issue." + str(e))
-            raise HTTPException(status_code=500, detail="Database connection issue.")
-    finally:
-        if cursor:      # release cursor
-            logger.info("Releasing cursor on /table/test_shard endpoint.")
-            cursor.close()
-
-@app.get("/table/shard_data", response_class=HTMLResponse)
-async def get_shard_data(request: Request):
-    """
-    Return the contents of the shard_data table.
-    """
-    cursor = None
-    try:
-        logger.info("Getting database connection for /table/shard_data endpoint.")
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM admin.shard_data")
-        columns = [col[0] for col in cursor.description]
-        rows = []
-        for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            # Append the converted hex_data and the timestamp_col to the rows list
-            rows.append((hex_data, row[1]))
-        return templates.TemplateResponse("table.html", {
-            "request": request, 
-            "rows": rows,
-            "columns": columns,
-            "table_title": "shard_data Table"
-        })
-    except oracledb.DatabaseError as e:
-        error, = e.args
-        if error.code == 1017:
-            # ORA-01017: invalid username/password; logon denied
-            logger.error("Database credentials are invalid.")
-            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
-        else:
-            # Generic error handler for database issues
-            logger.error("Database connection issue." + str(e))
-            raise HTTPException(status_code=500, detail="Database connection issue.")
-    finally:
-        if cursor:      # release cursor
-            logger.info("Releasing cursor on /table/test_shard endpoint.")
-            cursor.close()
-
-@app.get("/table/sentinel", response_class=HTMLResponse)
-async def get_sentinel(request: Request):
-    """
-    Return the contents of the sentinel table.
-    """
-    cursor = None
-    try:
-        logger.info("Getting database connection for /table/sentinel endpoint.")
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM admin.sentinel")
-        columns = [col[0] for col in cursor.description]
-        rows = []
-        for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            rows.append((hex_data, row[1], row[2]))
-        return templates.TemplateResponse("table.html", {
-            "request": request, 
-            "rows": rows,
-            "columns": columns,
-            "table_title": "sentinel Table"
-        })
-    except oracledb.DatabaseError as e:
-        error, = e.args
-        if error.code == 1017:
-            # ORA-01017: invalid username/password; logon denied
-            logger.error("Database credentials are invalid.")
-            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
-        else:
-            # Generic error handler for database issues
-            logger.error("Database connection issue." + str(e))
-            raise HTTPException(status_code=500, detail="Database connection issue.")
-    finally:
-        if cursor:      # release cursor
-            logger.info("Releasing cursor on /table/test_shard endpoint.")
-            cursor.close()
-
-
-
-
 @app.get("/table/input")
 async def get_input(request: Request):
     """
@@ -496,9 +380,7 @@ async def get_test_table(request: Request):
             logger.info("Releasing cursor on /table/test endpoint.")
             cursor.close()
 
-
-
-@app.get("/logs", response_class=HTMLResponse)
+@app.get("/api/logs", response_class=HTMLResponse)
 async def get_logs(request: Request):
     """
     Return an HTML list of log filenames in the logs directory or the content of the log file if there is only one.
@@ -516,7 +398,7 @@ async def get_logs(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/logs/{filename}", name="read_log")
+@app.get("/api/logs/{filename}", name="read_log")
 async def read_log(request: Request, filename: str):
     """
     Return the content of the specified log file.
@@ -531,16 +413,16 @@ async def read_log(request: Request, filename: str):
             raise HTTPException(status_code=500, detail="Error reading file.")
     else:
         raise HTTPException(status_code=404, detail="File not found.")
-    
-@app.get("/{full_path:path}", include_in_schema=False)
-async def catch_all(full_path: str):
-    return FileResponse('build/index.html')
 
 # mount build directory
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def catch_all(full_path: str):
+    return FileResponse('build/index.html')
 
 def main():
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    main()
