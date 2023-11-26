@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Lato&display=swap");
 
 :root {
   --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
@@ -10,20 +10,17 @@
 
 body {
   background-color: #f7f7f7;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  font-family: "Lato", sans-serif;
   margin: 0;
-  font-family: 'Lato', sans-serif;
 }
 
 .container {
   margin: 30px auto;
   width: 350px;
 }
-
+h2 {
+  text-align: center;
+}
 h1 {
   letter-spacing: 1px;
   margin: 0;
@@ -77,8 +74,9 @@ label {
   margin: 10px 0;
 }
 
-input[type='text'],
-input[type='number'] {
+input[type="text"],
+input[type="user2"],
+input[type="number"] {
   border: 1px solid #dedede;
   border-radius: 2px;
   display: block;
@@ -148,4 +146,139 @@ input[type='number'] {
 
 .list li:hover .delete-btn {
   opacity: 1;
+}
+
+/* Admin Page CSS */
+
+.admin {
+  display: flex;
+  .homeContainer {
+    flex: 6;
+    .widgets {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+  }
+}
+
+.widget {
+  margin-right: 20px;
+  justify-content: space-between;
+  display: flex;
+  flex: 1;
+  padding: 10px;
+  -webkit-box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
+  box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 47);
+  border-radius: 10px;
+  height: 100px;
+  
+  .left,
+  .right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .title {
+    font-weight: bold;
+    font-size: 14px;
+    color: rgb(160,160,160)
+  }
+
+  .counter{
+    font-size: 28px;
+     font-weight: 300;
+
+  }
+
+  .link{
+    width: max-content;
+    font-size: 12px;
+    border-bottom: 0.5px solid gray;
+  }
+
+  .percentage{
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+
+    &.positive{
+      color:#2ecc71
+    }
+    &.negative{
+      color:#c0392b
+    }
+  }
+
+  .icon{
+    border-radius: 5px;
+    align-self: flex-end;
+  }
+}
+
+/* Admin Sidebar */
+.sidebar {
+  flex: 1;
+  border-right: 0.5px solid rgb(230, 227, 227);
+  min-height: 100vh;
+}
+/* Sidebar Top */
+.sidebar .top {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar .top .logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #6439ff;
+}
+
+.sidebar hr {
+  height: 0;
+  border: 0.5px solid rgb(242, 237, 237);
+}
+
+/* Sidebar Center Elements */
+.sidebar .center {
+  padding-left: 10px;
+}
+
+.sidebar .center ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar .center ul .title {
+  font-size: 10px;
+  font-weight: bold;
+  color: #999;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+.sidebar .center ul li {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #ece8ff;
+  }
+
+  .icon {
+    font-size: 18px;
+    color: #7451f8;
+  }
+}
+
+.sidebar .center ul li span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  margin-left: 10px;
 }
