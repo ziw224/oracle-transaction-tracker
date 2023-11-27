@@ -418,6 +418,10 @@ async def read_log(request: Request, filename: str):
 # mount build directory
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
+@app.get("/admin", include_in_schema=False)
+async def admin():
+    return FileResponse('build/index.html')
+
 @app.get("/{full_path:path}", include_in_schema=False)
 async def catch_all(full_path: str):
     logger.info(f"Requested path: {full_path}")
