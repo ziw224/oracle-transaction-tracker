@@ -385,7 +385,7 @@ async def get_test_table(request: Request):
             logger.info("Releasing cursor on /table/test endpoint.")
             cursor.close()
 
-@app.get("/api/logs", response_class=HTMLResponse)
+@app.get("/logs", response_class=HTMLResponse)
 async def get_logs(request: Request):
     """
     Return an HTML list of log filenames in the logs directory or the content of the log file if there is only one.
@@ -403,7 +403,7 @@ async def get_logs(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/logs/{filename}", name="read_log")
+@app.get("/logs/{filename}", name="read_log")
 async def read_log(request: Request, filename: str):
     """
     Return the content of the specified log file.
@@ -421,14 +421,6 @@ async def read_log(request: Request, filename: str):
 
 # mount build directory
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
-
-@app.get("/{full_path:path}", include_in_schema=False)
-async def catch_all(full_path: str):
-    logger.info(f"Requested path: {full_path}")
-    build_path = PathLib(__file__).parent / "build" / "index.html"
-    if not build_path.is_file():
-        return HTMLResponse("Build directory not found.", status_code=404)
-    return FileResponse(str(build_path))
 
 def main():
     uvicorn.run(app, host="0.0.0.0", port=8000)
