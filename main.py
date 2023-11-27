@@ -420,6 +420,7 @@ app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
 @app.get("/{full_path:path}", include_in_schema=False)
 async def catch_all(full_path: str):
+    logger.info(f"Requested path: {full_path}")
     build_path = PathLib(__file__).parent / "build" / "index.html"
     if not build_path.is_file():
         return HTMLResponse("Build directory not found.", status_code=404)
