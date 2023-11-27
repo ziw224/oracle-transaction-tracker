@@ -219,7 +219,7 @@ async def new_wallet():
 @app.get("/command/send-tokens/{wallet_number}/{amount}/{address}")
 async def send_tokens(wallet_number: int, amount: int, address: str = Path(..., title="The address to send tokens to")):
     """
-    Send tokens from a specified wallet to another wallet.
+    Send tokens from a specified wallet to another wallet (amount is total value, not utxos).
     """
     mempool_filename = f"mempool{wallet_number}.dat"
     wallet_filename = f"wallet{wallet_number}.dat"
