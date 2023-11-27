@@ -131,13 +131,15 @@ async def hello():
 ############
 # COMMANDS #
 ############  
-@app.get("/command/mint-tokens/{num_utxos}/{value_per_utxo}")
-async def mint_tokens(num_utxos: int, value_per_utxo: int):
+@app.get("/command/mint-tokens/{userid}/{num_utxos}/{value_per_utxo}")
+async def mint_tokens(userid: int, num_utxos: int, value_per_utxo: int):
     """
-    Mint new coins: a specified number of UTXOs each with a given value.
+    Mint new coins to a specific user's wallet: a specified number of UTXOs each with a given value.
     """
+    mempool_filename = f"mempool{userid}.dat"
+    wallet_filename = f"wallet{userid}.dat"
     try:
-        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint {num_utxos} {value_per_utxo}"
+        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} mint {num_utxos} {value_per_utxo}"
         exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
         exec_output = docker_client.api.exec_start(exec_id)
         output_lines = exec_output.decode('utf-8').strip().split("\n")  # Split the output by new lines (\n)
@@ -153,7 +155,6 @@ async def inspect_wallet(userid: int):
     """
     mempool_filename = f"mempool{userid}.dat"
     wallet_filename = f"wallet{userid}.dat"
-
     try:
         command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} info"
         exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
@@ -171,7 +172,6 @@ async def inspect_wallet_full(userid: int):
     wallet_filename = f"wallet{userid}.dat"
     wallet_command = f"cat {wallet_filename}"
     mempool_command = f"cat {mempool_filename}"
-
     try:
         # Execute command to read wallet file
         exec_id_wallet = docker_client.api.exec_create(container.id, f"/bin/bash -c '{wallet_command}'")
@@ -194,7 +194,6 @@ async def new_wallet():
     Create a new wallet with a unique number.
     """
     wallet_number_file = "latest_wallet_number.txt"
-
     # Read the latest wallet number and increment it
     if not os.path.exists(wallet_number_file):
         latest_number = 0
@@ -202,14 +201,11 @@ async def new_wallet():
         with open(wallet_number_file, "r") as file:
             latest_number = int(file.read().strip())
     new_number = latest_number + 1
-
-    # Update the file with the new latest number
-    with open(wallet_number_file, "w") as file:
+    with open(wallet_number_file, "w") as file:         # Update the file with the new latest number
         file.write(str(new_number))
 
     mempool_filename = f"mempool{new_number}.dat"
     wallet_filename = f"wallet{new_number}.dat"
-
     try:
         command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} newaddress"
         exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
@@ -227,13 +223,37 @@ async def send_tokens(wallet_number: int, amount: int, address: str = Path(..., 
     """
     mempool_filename = f"mempool{wallet_number}.dat"
     wallet_filename = f"wallet{wallet_number}.dat"
-
     try:
         command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} send {amount} {address}"
         exec_id = docker_client.api.exec_create(container.id, ["/bin/bash", "-c", command])
         exec_output = docker_client.api.exec_start(exec_id)
         output_lines = exec_output.decode('utf-8').strip().split("\n")
         output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
+        return {"output": output_dict}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/command/import-tokens/{userid}/{importinput}")
+async def import_tokens(userid: int, importinput: str):
+    """
+    Import tokens to a user's wallet using importinput data, and then sync the wallet.
+    """
+    mempool_filename = f"mempool{userid}.dat"
+    wallet_filename = f"wallet{userid}.dat"
+    try:
+        import_command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} importinput {importinput}"
+        exec_id_import = docker_client.api.exec_create(container.id, f"/bin/bash -c '{import_command}'")
+        import_output = docker_client.api.exec_start(exec_id_import)
+        sync_command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} sync"
+        exec_id_sync = docker_client.api.exec_create(container.id, f"/bin/bash -c '{sync_command}'")
+        sync_output = docker_client.api.exec_start(exec_id_sync)
+
+        import_output_lines = import_output.decode('utf-8').strip().split("\n")
+        sync_output_lines = sync_output.decode('utf-8').strip().split("\n")
+        output_dict = {
+            "import_output": {f"line_{index}": line for index, line in enumerate(import_output_lines, start=1)},
+            "sync_output": {f"line_{index}": line for index, line in enumerate(sync_output_lines, start=1)}
+        }
         return {"output": output_dict}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -254,8 +274,6 @@ async def get_input(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # row_str = ', '.join(map(str, row))
-            # logger.info(row_str)
             rows.append(row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
