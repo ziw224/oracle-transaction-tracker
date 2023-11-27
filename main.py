@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
 from docker.errors import NotFound
 
 
@@ -419,7 +420,10 @@ app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
 @app.get("/{full_path:path}", include_in_schema=False)
 async def catch_all(full_path: str):
-    return FileResponse('build/index.html')
+    build_path = Path(__file__).parent / "build" / "index.html"
+    if not build_path.is_file():
+        return HTMLResponse("Build directory not found.", status_code=404)
+    return FileResponse(str(build_path))
 
 def main():
     uvicorn.run(app, host="0.0.0.0", port=8000)
