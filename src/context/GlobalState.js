@@ -8,7 +8,7 @@ const initialState = {
 
 const fetchData = async () => {
   try {
-    const response = await fetch("http://localhost:8000/");
+    const response = await fetch("http://150.136.246.83:8000/table/test", {mode:'cors'});
     const data = await response.json();
     return data;
   } catch (error) {
