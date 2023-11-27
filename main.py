@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path as PathLib
 from docker.errors import NotFound
 
-
 # Global variables
 connection, container = None, None
 LOGS_DIR = "logs"
@@ -131,14 +130,15 @@ async def hello():
 
 ############
 # COMMANDS #
-############
-@app.get("/command/mint-tokens")
-async def mint_tokens():
+############  
+@app.get("/command/mint-tokens/{num_utxos}/{value_per_utxo}")
+async def mint_tokens(num_utxos: int, value_per_utxo: int):
     """
-    Mint tokens.
+    Mint new coins: a specified number of UTXOs each with a given value.
     """
     try:
-        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint 10 5'")
+        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat mint {num_utxos} {value_per_utxo}"
+        exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
         exec_output = docker_client.api.exec_start(exec_id)
         output_lines = exec_output.decode('utf-8').strip().split("\n")  # Split the output by new lines (\n)
         output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
@@ -146,39 +146,90 @@ async def mint_tokens():
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/command/inspect-wallet")
-async def inspect_wallet():
+@app.get("/command/inspect-wallet/{userid}")
+async def inspect_wallet(userid: int):
     """
-    Return wallet information.
+    Return wallet and mempool information for the specified user.
     """
+    mempool_filename = f"mempool{userid}.dat"
+    wallet_filename = f"wallet{userid}.dat"
+
     try:
-        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat info'")
+        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} info"
+        exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
         exec_output = docker_client.api.exec_start(exec_id)
         return {"output": exec_output.decode('utf-8').strip().split("\n")}
+    except docker.errors.DockerException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/command/inspect-wallet-full/{userid}")
+async def inspect_wallet_full(userid: int):
+    """
+    Return the contents of the specified user's wallet and mempool files.
+    """
+    mempool_filename = f"mempool{userid}.dat"
+    wallet_filename = f"wallet{userid}.dat"
+    wallet_command = f"cat {wallet_filename}"
+    mempool_command = f"cat {mempool_filename}"
+
+    try:
+        # Execute command to read wallet file
+        exec_id_wallet = docker_client.api.exec_create(container.id, f"/bin/bash -c '{wallet_command}'")
+        wallet_output = docker_client.api.exec_start(exec_id_wallet)
+
+        # Execute command to read mempool file
+        exec_id_mempool = docker_client.api.exec_create(container.id, f"/bin/bash -c '{mempool_command}'")
+        mempool_output = docker_client.api.exec_start(exec_id_mempool)
+
+        return {
+            "wallet_contents": wallet_output.decode('utf-8').strip(),
+            "mempool_contents": mempool_output.decode('utf-8').strip()
+        }
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.get("/command/new-wallet")
 async def new_wallet():
     """
-    Return new wallet information.
+    Create a new wallet with a unique number.
     """
+    wallet_number_file = "latest_wallet_number.txt"
+
+    # Read the latest wallet number and increment it
+    if not os.path.exists(wallet_number_file):
+        latest_number = 0
+    else:
+        with open(wallet_number_file, "r") as file:
+            latest_number = int(file.read().strip())
+    new_number = latest_number + 1
+
+    # Update the file with the new latest number
+    with open(wallet_number_file, "w") as file:
+        file.write(str(new_number))
+
+    mempool_filename = f"mempool{new_number}.dat"
+    wallet_filename = f"wallet{new_number}.dat"
+
     try:
-        exec_id = docker_client.api.exec_create(container.id, "/bin/bash -c './build/src/uhs/client/client-cli 2pc-compose.cfg mempool1.dat wallet1.dat newaddress'")
+        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} newaddress"
+        exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
         exec_output = docker_client.api.exec_start(exec_id)
-        output_lines = exec_output.decode('utf-8').strip().split("\n")  # Split the output by new lines (\n)
+        output_lines = exec_output.decode('utf-8').strip().split("\n")
         output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
-        return {"output": output_dict}
+        return {"output": output_dict, "wallet_number": new_number}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-@app.get("/command/send-tokens/{address}")
-async def send_tokens(address: str = Path(..., title="The address to send tokens to")):
+
+@app.get("/command/send-tokens/{wallet_number}/{amount}/{address}")
+async def send_tokens(wallet_number: int, amount: int, address: str = Path(..., title="The address to send tokens to")):
     """
-    Send tokens to another wallet.
+    Send tokens from a specified wallet to another wallet.
     """
+    mempool_filename = f"mempool{wallet_number}.dat"
+    wallet_filename = f"wallet{wallet_number}.dat"
+
     try:
-        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg mempool0.dat wallet0.dat send 30 {address}"
+        command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} send {amount} {address}"
         exec_id = docker_client.api.exec_create(container.id, ["/bin/bash", "-c", command])
         exec_output = docker_client.api.exec_start(exec_id)
         output_lines = exec_output.decode('utf-8').strip().split("\n")
