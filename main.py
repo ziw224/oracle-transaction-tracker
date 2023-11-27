@@ -99,6 +99,10 @@ async def exception_handler(request: Request, exc: Exception):
         "message": "Internal Server Error. Check the logs endpoint for more details."
     }, status_code=500)
 
+@app.get("/admin")
+async def admin():
+    return FileResponse('build/index.html')
+
 @app.get("/test/hello")
 async def hello():
     global connection
@@ -417,10 +421,6 @@ async def read_log(request: Request, filename: str):
 
 # mount build directory
 app.mount("/", StaticFiles(directory="build", html=True), name="static")
-
-@app.get("/admin", include_in_schema=False)
-async def admin():
-    return FileResponse('build/index.html')
 
 @app.get("/{full_path:path}", include_in_schema=False)
 async def catch_all(full_path: str):
