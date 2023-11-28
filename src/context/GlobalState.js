@@ -8,9 +8,12 @@ const initialState = {
 
 const fetchData = async () => {
   try {
-    const response = await fetch("http://150.136.246.83:8000/table/test", {mode:'cors'});
+    const response = await fetch('/table/test', { method: 'GET', headers: {'Accept': 'application/json'} });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const data = await response.json();
-    return data;
+    return data.rows || [];
   } catch (error) {
     console.error("Error fetching data:", error);
     return [];
