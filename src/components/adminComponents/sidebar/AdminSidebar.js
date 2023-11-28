@@ -1,8 +1,10 @@
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import PersonIcon from '@mui/icons-material/Person';
-import PaymentsIcon from '@mui/icons-material/Payments';
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import PersonIcon from "@mui/icons-material/Person";
+import PaymentsIcon from "@mui/icons-material/Payments";
+import { Link } from "react-router-dom";
 
-import './sidebar.css'
+import "./sidebar.css";
+
 export const AdminSidebar = () => {
   return (
     <div className="sidebar">
@@ -13,19 +15,25 @@ export const AdminSidebar = () => {
       <div className="center">
         <ul>
           <p className="title">MAIN</p>
+          <Link to="/admin" style={{ textDecoration: "none" }}>
           <li>
-            <TrendingUpIcon className="icon"/>
+            <TrendingUpIcon className="icon" />
             <span>Summary</span>
           </li>
+          </Link>
           <p className="title">LISTS</p>
-          <li>
-            <PersonIcon className="icon"/>
-            <span>Users</span>
-          </li>
-          <li>
-            <PaymentsIcon className="icon"/>
-            <span>Payment</span>
-          </li>
+          <Link to="/admin/user" style={{ textDecoration: "none" }}>
+            <li>
+              <PersonIcon className="icon" />
+              <span>Users</span>
+            </li>
+          </Link>
+          <Link to="/admin/payment" style={{ textDecoration: "none" }}>
+            <li>
+              <PaymentsIcon className="icon" />
+              <span>Payment</span>
+            </li>
+          </Link>
         </ul>
       </div>
     </div>

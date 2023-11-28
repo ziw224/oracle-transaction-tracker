@@ -153,6 +153,7 @@ input[type="number"] {
 
 .admin {
   display: flex;
+  
   .homeContainer {
     flex: 6;
     .widgets, .charts {
