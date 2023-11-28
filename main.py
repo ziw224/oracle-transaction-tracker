@@ -47,7 +47,7 @@ async def app_lifespan(app: FastAPI):
 
         # Run the container
         container = docker_client.containers.run(
-            "ghcr.io/mit-dci/opencbdc-tx-twophase",
+            "opencbdc-tx-twophase",
             network="2pc-network",
             command="/bin/bash",
             stdin_open=True,
