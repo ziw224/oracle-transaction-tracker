@@ -1,8 +1,8 @@
-import { Header } from "../../components/Header";
-import { Balance } from "../../components/Balance";
-import { InputOutput } from "../../components/InputOutput";
-import { TransactionList } from "../../components/TransactionList";
-import { AddTransaction } from "../../components/AddTransaction";
+import { Header } from "../../components/homeComponents/Header";
+import { Balance } from "../../components/homeComponents/Balance";
+import { InputOutput } from "../../components/homeComponents/InputOutput";
+import { TransactionList } from "../../components/homeComponents/TransactionList";
+import { AddTransaction } from "../../components/homeComponents/AddTransaction";
 import { GlobalProvider } from "../../context/GlobalState";
 import "../../App.css";
 
