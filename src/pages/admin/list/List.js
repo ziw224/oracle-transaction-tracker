@@ -4,7 +4,7 @@ import { DataTable } from "../../../components/adminComponents/dataTable/DataTab
 
 export const List = () => {
   return (
-    <div className="list">
+    <div className="admin-list">
       <AdminSidebar />
       <div className="listContainer">
         <DataTable />
