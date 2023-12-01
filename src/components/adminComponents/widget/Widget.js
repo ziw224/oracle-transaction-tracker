@@ -6,28 +6,31 @@ import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import './widget.css';
 
 export const Widget = ({ type }) => {
-  const [userCount, setUserCount] = useState(null); // State to hold the user count
+  const [userCount, setUserCount] = useState(0); // Initialize user count to 0
   const [transactionAmount, setTransactionAmount] = useState(null); // Placeholder for transaction amount
   const percentage = 20; // Assuming this is static for now
 
-  // Suppose you also want to fetch the transaction amount, you would add it here
   useEffect(() => {
-    // Fetch the wallet data from the server
     const fetchWalletData = async () => {
       try {
         const response = await fetch('/cbdc-wallets');
         const data = await response.json();
-        const lastWallet = data.wallets[data.wallets.length - 1];
-        setUserCount(lastWallet.wallet_number); // Update the user count state
+        if (data.wallets && data.wallets.length > 0) {
+          const lastWallet = data.wallets[data.wallets.length - 1];
+          setUserCount(lastWallet.wallet_number);
+        } else {
+          setUserCount(0); // Set user count to 0 if there are no wallets
+        }
       } catch (error) {
         console.error("Failed to fetch wallet data:", error);
+        setUserCount(0); // Consider setting user count to 0 in case of an error
       }
     };
 
     setTransactionAmount(100); // Placeholder value
 
     fetchWalletData();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []); // Dependency array is empty, so this effect runs once on mount
 
   let data;
   switch (type) {
@@ -48,10 +51,10 @@ export const Widget = ({ type }) => {
         ),
       };
       break;
-    case "transaction":
+    case "transactions":
       data = {
         title: "OVERALL TRANSACTIONS",
-        isMoney: true, // Assuming you want to display money for transactions
+        isMoney: true,
         link: (
           <Link to="/admin/payment" className="link">
             View all transactions

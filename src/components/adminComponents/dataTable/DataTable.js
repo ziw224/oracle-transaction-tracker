@@ -19,7 +19,7 @@ export const DataTable = ({ type }) => {
         endpoint = '/cbdc-wallets';
         setColumns(['WALLET NUMBER', 'WALLET ADDRESS']);
       } else if (type === 'transactions') {
-        endpoint = '/table/transactions';
+        endpoint = '/table/transaction';
       }
 
       try {
