@@ -13,12 +13,10 @@
             padding: 20px;
             color: #333;
         }
-    
         h1 {
             color: #444;
             text-align: center;
         }
-    
         .table-container {
             width: 100%;
             margin: auto;
@@ -27,36 +25,40 @@
             border-radius: 8px;
             box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
             border: 1px solid #ddd;
+            overflow-x: auto; /* Allows for horizontal scrolling within the table container */
         }
-    
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            word-break: break-all; /* Ensures text breaks to prevent overflow */
+            table-layout: fixed; /* Uses fixed table layout for equal column widths */
+            word-break: break-word; /* Allows words to break and wrap onto the next line */
         }
-    
         th,
         td {
             padding: 10px;
             border: 1px solid #ddd;
             text-align: left;
-            word-wrap: break-word; /* Allows long strings of text to wrap within the cell */
+            vertical-align: top; /* Aligns text to the top of the cell */
+            overflow-wrap: break-word; /* Allows the words to wrap within the cell */
         }
-    
         th {
             background-color: #f7f7f7;
         }
-    
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-    
-        /* Remove horizontal scrolling bar */
-        /* If you have a specific container element for the table, apply overflow-y here */
-        overflow-y: auto;
-        overflow-x: hidden; /* Hide horizontal scrollbar */
-    </style>    
+        @media (max-width: 768px) {
+            .table-container {
+                padding: 0;
+                border: none;
+                box-shadow: none;
+            }
+            table {
+                table-layout: auto; /* On smaller screens, allow table to adjust column widths automatically */
+            }
+        }
+    </style>
 </head>
 
 <body>

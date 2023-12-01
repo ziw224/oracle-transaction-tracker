@@ -184,13 +184,13 @@ async def new_wallet():
     """
     Create a new wallet with a unique number.
     """
-    cbdc_wallet_file = "cbdc_wallets.txt"
-    # Read the latest wallet number and increment it
+    cbdc_wallet_file = "cbdc_wallets.txt"       # Read the latest wallet number and increment it
     if not os.path.exists(cbdc_wallet_file):
         latest_number = 0
     else:
         with open(cbdc_wallet_file, "r") as file:
-            latest_number = int(file.read().strip().split(',')[0])  # Split by comma and take the first element
+            lines = file.readlines()
+            latest_number = int(lines[-1].split(',')[0]) if lines else 0  # Get the last number in the file
     new_number = latest_number + 1
     mempool_filename = f"mempool{new_number}.dat"
     wallet_filename = f"wallet{new_number}.dat"
@@ -199,12 +199,14 @@ async def new_wallet():
         exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
         exec_output = docker_client.api.exec_start(exec_id)
         output_lines = exec_output.decode('utf-8').strip().split("\n")
-        output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
-        wallet_address = output_dict.get("line_3", None)  # Check if line_3 exists and get the wallet address
-        wallet_info_to_write = f"{new_number},{wallet_address}" if wallet_address else str(new_number)
-        with open(cbdc_wallet_file, "a") as file:
-            file.write(f"{wallet_info_to_write}\n")
-        return {"output": output_dict, "wallet_number": new_number, "wallet_address": wallet_address}
+        wallet_address = next((line for line in output_lines if line.startswith('usd')), None)          # Search for a line starting with 'usd'
+        if wallet_address:
+            wallet_info_to_write = f"{new_number},{wallet_address}"
+            with open(cbdc_wallet_file, "a") as file:
+                file.write(f"{wallet_info_to_write}\n")
+            return {"wallet_number": new_number, "wallet_address": wallet_address}
+        else:
+            raise HTTPException(status_code=404, detail="Wallet address not found in the output.")
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
 
