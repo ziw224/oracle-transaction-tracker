@@ -202,8 +202,8 @@ async def new_wallet():
         output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
         wallet_address = output_dict.get("line_3", None)  # Check if line_3 exists and get the wallet address
         wallet_info_to_write = f"{new_number},{wallet_address}" if wallet_address else str(new_number)
-        with open(cbdc_wallet_file, "w") as file:
-            file.write(wallet_info_to_write)
+        with open(cbdc_wallet_file, "a") as file:
+            file.write(f"{wallet_info_to_write}\n")
         return {"output": output_dict, "wallet_number": new_number, "wallet_address": wallet_address}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))

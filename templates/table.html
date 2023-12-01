@@ -20,22 +20,20 @@
         }
     
         .table-container {
-            width: 100%; /* Use full width to maximize space */
-            max-width: 1200px; /* Maximum width of the container */
+            width: 100%;
             margin: auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
             border: 1px solid #ddd;
-            overflow-x: auto; /* Allows horizontal scrolling */
         }
     
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            table-layout: auto; /* Adjusts column width based on content */
+            word-break: break-all; /* Ensures text breaks to prevent overflow */
         }
     
         th,
@@ -43,7 +41,7 @@
             padding: 10px;
             border: 1px solid #ddd;
             text-align: left;
-            white-space: nowrap; /* Prevents text from wrapping */
+            word-wrap: break-word; /* Allows long strings of text to wrap within the cell */
         }
     
         th {
@@ -53,6 +51,11 @@
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+    
+        /* Remove horizontal scrolling bar */
+        /* If you have a specific container element for the table, apply overflow-y here */
+        overflow-y: auto;
+        overflow-x: hidden; /* Hide horizontal scrollbar */
     </style>    
 </head>
 
