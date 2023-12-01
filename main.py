@@ -276,7 +276,13 @@ async def get_input(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            rows.append(row)
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):                                 # Check if the item is binary
+                    formatted_row.append(item.hex())                        # Convert binary to hex
+                else:
+                    formatted_row.append(item)                              # otherwise keep as is
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
@@ -313,10 +319,13 @@ async def get_output(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            # Append the converted hex_data and the timestamp_col to the rows list
-            rows.append((hex_data, row[1]))
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
@@ -353,9 +362,13 @@ async def get_transaction(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            rows.append((hex_data, row[1], row[2]))
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
@@ -392,9 +405,13 @@ async def get_transaction(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            rows.append((hex_data, row[1], row[2]))
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
