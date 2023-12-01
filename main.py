@@ -47,7 +47,7 @@ async def app_lifespan(app: FastAPI):
 
         # Run the container
         container = docker_client.containers.run(
-            "ghcr.io/mit-dci/opencbdc-tx-twophase",
+            "opencbdc-tx-twophase",
             network="2pc-network",
             command="/bin/bash",
             stdin_open=True,
@@ -227,11 +227,13 @@ async def send_tokens(wallet_number: int, amount: int, address: str = Path(..., 
         command = f"./build/src/uhs/client/client-cli 2pc-compose.cfg {mempool_filename} {wallet_filename} send {amount} {address}"
         exec_id = docker_client.api.exec_create(container.id, ["/bin/bash", "-c", command])
         exec_output = docker_client.api.exec_start(exec_id)
-        output_lines = exec_output.decode('utf-8').strip().split("\n")
+        output_lines = exec_output.decode('utf-8', 'replace').strip().split("\n")  # Using 'replace' to handle undecodable bytes
         output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
         return {"output": output_dict}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
+    except UnicodeDecodeError as e:
+        logger.error(f"Unicode decoding error: {e}")
 
 @app.get("/command/import-tokens/{userid}/{importinput}")
 async def import_tokens(userid: int, importinput: str):
