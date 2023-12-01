@@ -128,6 +128,22 @@ async def hello():
             cursor.close()
     return {"message": "Hello World"}
 
+@app.get("/cbdc-wallets")
+async def get_wallets():
+    cbdc_wallet_file = "cbdc_wallets.txt"
+    wallets = []
+    try:
+        if os.path.exists(cbdc_wallet_file):
+            with open(cbdc_wallet_file, "r") as file:
+                for line in file:
+                    parts = line.strip().split(',')
+                    wallet_number = parts[0]
+                    wallet_address = parts[1] if len(parts) > 1 else None
+                    wallets.append({"wallet_number": wallet_number, "wallet_address": wallet_address})
+        return {"wallets": wallets}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 ############
 # COMMANDS #
 ############  
@@ -163,47 +179,19 @@ async def inspect_wallet(userid: int):
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/command/inspect-wallet-full/{userid}")
-async def inspect_wallet_full(userid: int):
-    """
-    Return the contents of the specified user's wallet and mempool files.
-    """
-    mempool_filename = f"mempool{userid}.dat"
-    wallet_filename = f"wallet{userid}.dat"
-    wallet_command = f"cat {wallet_filename}"
-    mempool_command = f"cat {mempool_filename}"
-    try:
-        # Execute command to read wallet file
-        exec_id_wallet = docker_client.api.exec_create(container.id, f"/bin/bash -c '{wallet_command}'")
-        wallet_output = docker_client.api.exec_start(exec_id_wallet)
-
-        # Execute command to read mempool file
-        exec_id_mempool = docker_client.api.exec_create(container.id, f"/bin/bash -c '{mempool_command}'")
-        mempool_output = docker_client.api.exec_start(exec_id_mempool)
-
-        return {
-            "wallet_contents": wallet_output.decode('utf-8').strip(),
-            "mempool_contents": mempool_output.decode('utf-8').strip()
-        }
-    except docker.errors.DockerException as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
 @app.get("/command/new-wallet")
 async def new_wallet():
     """
     Create a new wallet with a unique number.
     """
-    wallet_number_file = "latest_wallet_number.txt"
-    # Read the latest wallet number and increment it
-    if not os.path.exists(wallet_number_file):
+    cbdc_wallet_file = "cbdc_wallets.txt"       # Read the latest wallet number and increment it
+    if not os.path.exists(cbdc_wallet_file):
         latest_number = 0
     else:
-        with open(wallet_number_file, "r") as file:
-            latest_number = int(file.read().strip())
+        with open(cbdc_wallet_file, "r") as file:
+            lines = file.readlines()
+            latest_number = int(lines[-1].split(',')[0]) if lines else 0  # Get the last number in the file
     new_number = latest_number + 1
-    with open(wallet_number_file, "w") as file:         # Update the file with the new latest number
-        file.write(str(new_number))
-
     mempool_filename = f"mempool{new_number}.dat"
     wallet_filename = f"wallet{new_number}.dat"
     try:
@@ -211,8 +199,14 @@ async def new_wallet():
         exec_id = docker_client.api.exec_create(container.id, f"/bin/bash -c '{command}'")
         exec_output = docker_client.api.exec_start(exec_id)
         output_lines = exec_output.decode('utf-8').strip().split("\n")
-        output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
-        return {"output": output_dict, "wallet_number": new_number}
+        wallet_address = next((line for line in output_lines if line.startswith('usd')), None)          # Search for a line starting with 'usd'
+        if wallet_address:
+            wallet_info_to_write = f"{new_number},{wallet_address}"
+            with open(cbdc_wallet_file, "a") as file:
+                file.write(f"{wallet_info_to_write}\n")
+            return {"wallet_number": new_number, "wallet_address": wallet_address}
+        else:
+            raise HTTPException(status_code=404, detail="Wallet address not found in the output.")
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -276,7 +270,13 @@ async def get_input(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            rows.append(row)
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):                                 # Check if the item is binary
+                    formatted_row.append(item.hex())                        # Convert binary to hex
+                else:
+                    formatted_row.append(item)                              # otherwise keep as is
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
@@ -313,10 +313,13 @@ async def get_output(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            # Append the converted hex_data and the timestamp_col to the rows list
-            rows.append((hex_data, row[1]))
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
@@ -353,9 +356,13 @@ async def get_transaction(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            rows.append((hex_data, row[1], row[2]))
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
@@ -392,9 +399,13 @@ async def get_transaction(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
-            hex_data = row[0].hex().upper() if row[0] else None
-            rows.append((hex_data, row[1], row[2]))
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
         return templates.TemplateResponse("table.html", {
@@ -431,7 +442,6 @@ async def get_test_table(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
             rows.append((row[0], row[1], row[2]))
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
