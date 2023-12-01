@@ -7,8 +7,10 @@ import './widget.css';
 
 export const Widget = ({ type }) => {
   const [userCount, setUserCount] = useState(null); // State to hold the user count
+  const [transactionAmount, setTransactionAmount] = useState(null); // Placeholder for transaction amount
   const percentage = 20; // Assuming this is static for now
 
+  // Suppose you also want to fetch the transaction amount, you would add it here
   useEffect(() => {
     // Fetch the wallet data from the server
     const fetchWalletData = async () => {
@@ -17,6 +19,8 @@ export const Widget = ({ type }) => {
         const data = await response.json();
         const lastWallet = data.wallets[data.wallets.length - 1];
         setUserCount(lastWallet.wallet_number); // Update the user count state
+        // You would replace this with actual logic to fetch transaction amount
+        setTransactionAmount(100); // Placeholder value
       } catch (error) {
         console.error("Failed to fetch wallet data:", error);
       }
@@ -47,7 +51,7 @@ export const Widget = ({ type }) => {
     case "transaction":
       data = {
         title: "OVERALL TRANSACTIONS",
-        isMoney: false,
+        isMoney: true, // Assuming you want to display money for transactions
         link: "View all transactions",
         icon: (
           <AccountBalanceIcon
@@ -66,7 +70,7 @@ export const Widget = ({ type }) => {
       <div className="left">
         <span className="title">{data.title}</span>
         <span className="counter">
-          {data.isMoney && "$"} {type === "user" ? userCount : amount}
+          {data.isMoney && "$"} {type === "user" ? userCount : transactionAmount}
         </span>
         <span className="link">{data.link}</span>
       </div>
