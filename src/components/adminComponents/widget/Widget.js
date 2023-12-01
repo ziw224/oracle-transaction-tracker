@@ -1,21 +1,41 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import PersonIcon from "@mui/icons-material/Person";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import './widget.css';
 
-import './widget.css'
 export const Widget = ({ type }) => {
-  let data;
-  // temporary: hardcode data for now
-  const amount = 100;
-  const percentage = 20;
+  const [userCount, setUserCount] = useState(null); // State to hold the user count
+  const percentage = 20; // Assuming this is static for now
 
+  useEffect(() => {
+    // Fetch the wallet data from the server
+    const fetchWalletData = async () => {
+      try {
+        const response = await fetch('/cbdc-wallets');
+        const data = await response.json();
+        const lastWallet = data.wallets[data.wallets.length - 1];
+        setUserCount(lastWallet.wallet_number); // Update the user count state
+      } catch (error) {
+        console.error("Failed to fetch wallet data:", error);
+      }
+    };
+
+    fetchWalletData();
+  }, []); // Empty dependency array means this effect runs once on mount
+
+  let data;
   switch (type) {
     case "user":
       data = {
         title: "USERS",
         isMoney: false,
-        link: "See all users",
+        link: (
+          <Link to="/admin/user" className="link">
+            See all users
+          </Link>
+        ),
         icon: (
           <PersonIcon
             className="icon"
@@ -40,12 +60,13 @@ export const Widget = ({ type }) => {
     default:
       break;
   }
+
   return (
     <div className="widget">
       <div className="left">
         <span className="title">{data.title}</span>
         <span className="counter">
-          {data.isMoney && "$"} {amount}
+          {data.isMoney && "$"} {type === "user" ? userCount : amount}
         </span>
         <span className="link">{data.link}</span>
       </div>
