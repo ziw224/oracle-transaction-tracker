@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { GlobalContext } from '../../../context/GlobalState';
 import { Link } from "react-router-dom";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import PersonIcon from "@mui/icons-material/Person";
@@ -6,31 +7,31 @@ import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import './widget.css';
 
 export const Widget = ({ type }) => {
-  const [userCount, setUserCount] = useState(0); // Initialize user count to 0
-  const [transactionAmount, setTransactionAmount] = useState(null); // Placeholder for transaction amount
+  const { userCount, setUserCount } = useContext(GlobalContext); // Use context
+  const [transactionAmount, setTransactionAmount] = useState(100); // Placeholder value
   const percentage = 20; // Assuming this is static for now
 
   useEffect(() => {
-    const fetchWalletData = async () => {
-      try {
-        const response = await fetch('/cbdc-wallets');
-        const data = await response.json();
-        if (data.wallets && data.wallets.length > 0) {
-          const lastWallet = data.wallets[data.wallets.length - 1];
-          setUserCount(lastWallet.wallet_number);
-        } else {
-          setUserCount(0); // Set user count to 0 if there are no wallets
+    // Fetch wallet data only if the widget type is 'user'
+    if (type === "user") {
+      const fetchWalletData = async () => {
+        try {
+          const response = await fetch('/cbdc-wallets');
+          const data = await response.json();
+          if (data.wallets && data.wallets.length > 0) {
+            const lastWallet = data.wallets[data.wallets.length - 1];
+            setUserCount(lastWallet.wallet_number);
+          } else {
+            setUserCount(0); // Set user count to 0 if there are no wallets
+          }
+        } catch (error) {
+          console.error("Failed to fetch wallet data:", error);
+          setUserCount(0); // Set user count to 0 in case of an error
         }
-      } catch (error) {
-        console.error("Failed to fetch wallet data:", error);
-        setUserCount(0); // Consider setting user count to 0 in case of an error
-      }
-    };
-
-    setTransactionAmount(100); // Placeholder value
-
-    fetchWalletData();
-  }, []); // Dependency array is empty, so this effect runs once on mount
+      };
+      fetchWalletData();
+    }
+  }, [type, setUserCount]);
 
   let data;
   switch (type) {

@@ -4,6 +4,7 @@ import AppReducer from "./AppReducer";
 // initial state
 const initialState = {
   transactions: [],
+  userCount: 0,
 };
 
 // const fetchData = async () => {
@@ -44,6 +45,14 @@ export const GlobalProvider = ({ children }) => {
   //   fetchInitialData();
   // }, []); // The empty dependency array ensures this effect runs only once on mount
 
+  // Function to update user count
+  function setUserCount(count) {
+    dispatch({
+      type: "SET_USER_COUNT",
+      payload: count
+    });
+  }
+
   // Actions
   function addTransaction(transaction) {
     dispatch({
@@ -56,7 +65,9 @@ export const GlobalProvider = ({ children }) => {
     <GlobalContext.Provider
       value={{
         transactions: state.transactions,
+        userCount: state.userCount, // Make userCount available in context
         addTransaction,
+        setUserCount, // Add this to make it available in context
       }}
     >
       {children}
