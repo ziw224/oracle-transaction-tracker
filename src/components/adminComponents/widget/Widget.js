@@ -19,12 +19,12 @@ export const Widget = ({ type }) => {
         const data = await response.json();
         const lastWallet = data.wallets[data.wallets.length - 1];
         setUserCount(lastWallet.wallet_number); // Update the user count state
-        // You would replace this with actual logic to fetch transaction amount
-        setTransactionAmount(100); // Placeholder value
       } catch (error) {
         console.error("Failed to fetch wallet data:", error);
       }
     };
+
+    setTransactionAmount(100); // Placeholder value
 
     fetchWalletData();
   }, []); // Empty dependency array means this effect runs once on mount
@@ -52,7 +52,11 @@ export const Widget = ({ type }) => {
       data = {
         title: "OVERALL TRANSACTIONS",
         isMoney: true, // Assuming you want to display money for transactions
-        link: "View all transactions",
+        link: (
+          <Link to="/admin/payment" className="link">
+            View all transactions
+          </Link>
+        ),
         icon: (
           <AccountBalanceIcon
             className="icon"
