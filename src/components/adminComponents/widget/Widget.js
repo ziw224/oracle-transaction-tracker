@@ -69,6 +69,12 @@ export const Widget = ({ type }) => {
       };
       break;
     default:
+      data = {
+        title: "Unknown",
+        isMoney: false,
+        link: <span>{type}</span>,
+        icon: <div />, // or any default icon
+      };
       break;
   }
 
