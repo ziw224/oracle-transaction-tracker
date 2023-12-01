@@ -15,6 +15,7 @@ export const DataTable = ({ type }) => {
   useEffect(() => {
     const fetchData = async () => {
       let endpoint = '';
+      console.log(type);
       if (type === 'wallets') {
         endpoint = '/cbdc-wallets';
         setColumns(['WALLET NUMBER', 'WALLET ADDRESS']);
