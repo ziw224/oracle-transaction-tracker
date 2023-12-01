@@ -128,6 +128,22 @@ async def hello():
             cursor.close()
     return {"message": "Hello World"}
 
+@app.get("/cbdc-wallets")
+async def get_wallets():
+    cbdc_wallet_file = "cbdc_wallets.txt"
+    wallets = []
+    try:
+        if os.path.exists(cbdc_wallet_file):
+            with open(cbdc_wallet_file, "r") as file:
+                for line in file:
+                    parts = line.strip().split(',')
+                    wallet_number = parts[0]
+                    wallet_address = parts[1] if len(parts) > 1 else None
+                    wallets.append({"wallet_number": wallet_number, "wallet_address": wallet_address})
+        return {"wallets": wallets}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 ############
 # COMMANDS #
 ############  
@@ -163,47 +179,19 @@ async def inspect_wallet(userid: int):
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/command/inspect-wallet-full/{userid}")
-async def inspect_wallet_full(userid: int):
-    """
-    Return the contents of the specified user's wallet and mempool files.
-    """
-    mempool_filename = f"mempool{userid}.dat"
-    wallet_filename = f"wallet{userid}.dat"
-    wallet_command = f"cat {wallet_filename}"
-    mempool_command = f"cat {mempool_filename}"
-    try:
-        # Execute command to read wallet file
-        exec_id_wallet = docker_client.api.exec_create(container.id, f"/bin/bash -c '{wallet_command}'")
-        wallet_output = docker_client.api.exec_start(exec_id_wallet)
-
-        # Execute command to read mempool file
-        exec_id_mempool = docker_client.api.exec_create(container.id, f"/bin/bash -c '{mempool_command}'")
-        mempool_output = docker_client.api.exec_start(exec_id_mempool)
-
-        return {
-            "wallet_contents": wallet_output.decode('utf-8').strip(),
-            "mempool_contents": mempool_output.decode('utf-8').strip()
-        }
-    except docker.errors.DockerException as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
 @app.get("/command/new-wallet")
 async def new_wallet():
     """
     Create a new wallet with a unique number.
     """
-    wallet_number_file = "latest_wallet_number.txt"
+    cbdc_wallet_file = "cbdc_wallets.txt"
     # Read the latest wallet number and increment it
-    if not os.path.exists(wallet_number_file):
+    if not os.path.exists(cbdc_wallet_file):
         latest_number = 0
     else:
-        with open(wallet_number_file, "r") as file:
-            latest_number = int(file.read().strip())
+        with open(cbdc_wallet_file, "r") as file:
+            latest_number = int(file.read().strip().split(',')[0])  # Split by comma and take the first element
     new_number = latest_number + 1
-    with open(wallet_number_file, "w") as file:         # Update the file with the new latest number
-        file.write(str(new_number))
-
     mempool_filename = f"mempool{new_number}.dat"
     wallet_filename = f"wallet{new_number}.dat"
     try:
@@ -212,7 +200,11 @@ async def new_wallet():
         exec_output = docker_client.api.exec_start(exec_id)
         output_lines = exec_output.decode('utf-8').strip().split("\n")
         output_dict = {f"line_{index}": line for index, line in enumerate(output_lines, start=1)}
-        return {"output": output_dict, "wallet_number": new_number}
+        wallet_address = output_dict.get("line_3", None)  # Check if line_3 exists and get the wallet address
+        wallet_info_to_write = f"{new_number},{wallet_address}" if wallet_address else str(new_number)
+        with open(cbdc_wallet_file, "w") as file:
+            file.write(wallet_info_to_write)
+        return {"output": output_dict, "wallet_number": new_number, "wallet_address": wallet_address}
     except docker.errors.DockerException as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -448,7 +440,6 @@ async def get_test_table(request: Request):
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
-            # Convert the bytestring to hexadecimal representation
             rows.append((row[0], row[1], row[2]))
         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
