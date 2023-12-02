@@ -102,6 +102,10 @@ async def exception_handler(request: Request, exc: Exception):
 async def admin():
     return FileResponse('build/index.html')
 
+@app.get("/admin/user")
+async def admin_users():
+    return FileResponse('build/index.html')
+
 @app.get("/test/hello")
 async def hello():
     global connection
