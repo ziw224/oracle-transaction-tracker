@@ -10,11 +10,6 @@ export default (state, action) => {
                 ...state,
                 transactions: action.payload
             };
-        case 'SET_USER_COUNT':
-            return {
-                ...state,
-                userCount: action.payload
-            };
         default:
             return state;
     }
