@@ -386,6 +386,49 @@ async def get_transaction(request: Request):
             logger.info("Releasing cursor on /table/transaction endpoint.")
             cursor.close()
 
+@app.get("/table/transactionholder")
+async def get_transaction(request: Request):
+    """
+    Return the contents of the transactionholder table.
+    """
+    cursor = None
+    try:
+        logger.info("Getting database connection for /table/transactionholder endpoint.")
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM admin.transactionholder")
+        columns = [col[0] for col in cursor.description]
+        rows = []
+        for row in cursor:
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
+        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
+        return templates.TemplateResponse("table.html", {
+            "request": request, 
+            "rows": rows,
+            "columns": columns,
+            "table_title": "Transaction Holder Table"
+        })
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        if error.code == 1017:
+            # ORA-01017: invalid username/password; logon denied
+            logger.error("Database credentials are invalid.")
+            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
+        else:
+            # Generic error handler for database issues
+            logger.error("Database connection issue." + str(e))
+            raise HTTPException(status_code=500, detail="Database connection issue.")
+    finally:
+        if cursor:      # release cursor
+            logger.info("Releasing cursor on /table/transactionholder endpoint.")
+            cursor.close()
+
 @app.get("/table/uhs")
 async def get_transaction(request: Request):
     """
@@ -427,6 +470,49 @@ async def get_transaction(request: Request):
     finally:
         if cursor:      # release cursor
             logger.info("Releasing cursor on /table/uhs endpoint.")
+            cursor.close()
+
+@app.get("/table/uhspreview")
+async def get_transaction(request: Request):
+    """
+    Return the contents of the uhs preview table.
+    """
+    cursor = None
+    try:
+        logger.info("Getting database connection for /table/uhspreview endpoint.")
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM admin.uhs")
+        columns = [col[0] for col in cursor.description]
+        rows = []
+        for row in cursor:
+            formatted_row = []
+            for item in row:
+                if isinstance(item, bytes):
+                    formatted_row.append(item.hex())
+                else:
+                    formatted_row.append(item)
+            rows.append(formatted_row)
+        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
+        return templates.TemplateResponse("table.html", {
+            "request": request, 
+            "rows": rows,
+            "columns": columns,
+            "table_title": "UHS Preview Table"
+        })
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        if error.code == 1017:
+            # ORA-01017: invalid username/password; logon denied
+            logger.error("Database credentials are invalid.")
+            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
+        else:
+            # Generic error handler for database issues
+            logger.error("Database connection issue." + str(e))
+            raise HTTPException(status_code=500, detail="Database connection issue.")
+    finally:
+        if cursor:      # release cursor
+            logger.info("Releasing cursor on /table/uhspreview endpoint.")
             cursor.close()
 
 @app.get("/table/test")
