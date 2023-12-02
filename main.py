@@ -472,16 +472,16 @@ async def get_transaction(request: Request):
             logger.info("Releasing cursor on /table/uhs endpoint.")
             cursor.close()
 
-@app.get("/table/uhspreview")
+@app.get("/table/uhspreviews")
 async def get_transaction(request: Request):
     """
-    Return the contents of the uhs preview table.
+    Return the contents of the uhs previews table.
     """
     cursor = None
     try:
-        logger.info("Getting database connection for /table/uhspreview endpoint.")
+        logger.info("Getting database connection for /table/uhspreviews endpoint.")
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM admin.uhs")
+        cursor.execute("SELECT * FROM admin.uhs_previews")
         columns = [col[0] for col in cursor.description]
         rows = []
         for row in cursor:
@@ -498,7 +498,7 @@ async def get_transaction(request: Request):
             "request": request, 
             "rows": rows,
             "columns": columns,
-            "table_title": "UHS Preview Table"
+            "table_title": "UHS Previews Table"
         })
     except oracledb.DatabaseError as e:
         error, = e.args
@@ -512,7 +512,7 @@ async def get_transaction(request: Request):
             raise HTTPException(status_code=500, detail="Database connection issue.")
     finally:
         if cursor:      # release cursor
-            logger.info("Releasing cursor on /table/uhspreview endpoint.")
+            logger.info("Releasing cursor on /table/uhspreviews endpoint.")
             cursor.close()
 
 @app.get("/table/test")
