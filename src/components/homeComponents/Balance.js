@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { GlobalWalletContext } from "./context/GlobalWalletContext";
+import { GlobalWalletContext } from "../../context/WalletContext";
 
 export const Balance = () => {
   const { selectedWalletNumber } = useContext(GlobalWalletContext);
