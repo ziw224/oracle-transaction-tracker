@@ -14,6 +14,10 @@ export const Navbar = (props) => {
     }
   };
 
+  const toggleDropdown = () => {
+    setOpen(!open);
+  };
+
   return (
     <nav className="navbar">
       <ul className="navbar-nav">
@@ -27,6 +31,7 @@ export const Navbar = (props) => {
                 <span className="icon-text">USER</span>
               )}
               <a
+                href="#!"
                 className="icon-button"
                 onClick={() => handleIconClick(icon.type)}
               >
@@ -34,7 +39,8 @@ export const Navbar = (props) => {
               </a>
             </div>
           ))}
-          {open && props.children}
+          {/* Pass the toggle function to the children */}
+          {open && React.cloneElement(props.children, { toggleDropdown })}
         </li>
       </ul>
     </nav>

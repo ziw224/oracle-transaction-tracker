@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import FaceIcon from '@mui/icons-material/Face';
+import { GlobalWalletContext } from "../../context/WalletContext"; // Import the context
 import "./navbar.css";
 
-export const DropdownMenu = () => {
+export const DropdownMenu = ({ toggleDropdown }) => {
   const [wallets, setWallets] = useState([]);
-  const [selectedWalletNumber, setSelectedWalletNumber] = useState(null);
+  const { setSelectedWalletNumber } = useContext(GlobalWalletContext); // Use the context
 
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -24,12 +25,17 @@ export const DropdownMenu = () => {
 
     fetchWalletData();
   }, []);
+
+  function handleUserSelection(walletNumber) {
+    // Set the selected wallet number in the context
+    setSelectedWalletNumber(walletNumber);
+    toggleDropdown();
+  }
   
   function DropdownItem(props) {
-    // Add onClick handler to set selected wallet
     return (
-      <a className={`menu-item ${props.walletNumber === selectedWalletNumber ? 'selected' : ''}`}
-         onClick={() => setSelectedWalletNumber(props.walletNumber)}>
+      <a className={`menu-item ${props.walletNumber === props.selectedWalletNumber ? 'selected' : ''}`}
+         onClick={() => handleUserSelection(props.walletNumber)}>
         <span className="icon-button">{props.leftIcon}</span>
         {props.children}
       </a>
@@ -43,6 +49,8 @@ export const DropdownMenu = () => {
           leftIcon={<FaceIcon />} 
           key={wallet.wallet_number} 
           walletNumber={wallet.wallet_number}
+          selectedWalletNumber={selectedWalletNumber}
+          onClick={() => handleUserSelection(wallet.wallet_number)}
         >
           User {wallet.wallet_number}
         </DropdownItem>
