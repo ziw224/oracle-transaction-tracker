@@ -3,17 +3,17 @@ import { Link } from "react-router-dom";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import PersonIcon from "@mui/icons-material/Person";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import './widget.css';
+import "./widget.css";
 
 export const Widget = ({ type }) => {
   const [userCount, setUserCount] = useState(0); // Initialize user count to 0
   const [transactionAmount, setTransactionAmount] = useState(null); // Placeholder for transaction amount
-  const percentage = 20; // Assuming this is static for now
-
+  let percentage = 20
+  
   useEffect(() => {
     const fetchWalletData = async () => {
       try {
-        const response = await fetch('/cbdc-wallets');
+        const response = await fetch("/cbdc-wallets");
         const data = await response.json();
         if (data.wallets && data.wallets.length > 0) {
           const lastWallet = data.wallets[data.wallets.length - 1];
@@ -53,8 +53,8 @@ export const Widget = ({ type }) => {
       break;
     case "transactions":
       data = {
-        title: "OVERALL TRANSACTIONS",
-        isMoney: true,
+        title: "OVERALL TRANSACTIONS (FREQUENCY)",
+        isMoney: false,
         link: (
           <Link to="/admin/payment" className="link">
             View all transactions
@@ -83,7 +83,8 @@ export const Widget = ({ type }) => {
       <div className="left">
         <span className="title">{data.title}</span>
         <span className="counter">
-          {data.isMoney && "$"} {type === "user" ? userCount : transactionAmount}
+          {data.isMoney && "$"}{" "}
+          {type === "user" ? userCount : transactionAmount}
         </span>
         <span className="link">{data.link}</span>
       </div>
