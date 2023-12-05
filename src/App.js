@@ -10,18 +10,10 @@ function App() {
     <div className="App">
       <Router>
         <Routes>
-          <Route path="/">
-            <Route index element={<Home />} />
-            <Route path="/admin">
-              <Route index element={<Admin />} />
-            </Route>
-            <Route path="/admin/user" >
-              <Route index element={<List />} />
-            </Route>
-            <Route path="/admin/payment">
-              <Route index element={<List />} />
-            </Route>
-          </Route>
+          <Route path="/" element={<Home />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/user" element={<List type="wallets" />} />
+          <Route path="/admin/payment" element={<List type="transactions" />} />
         </Routes>
       </Router>
     </div>

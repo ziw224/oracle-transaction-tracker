@@ -3,31 +3,34 @@ import { Link } from "react-router-dom";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import PersonIcon from "@mui/icons-material/Person";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import './widget.css';
+import "./widget.css";
 
 export const Widget = ({ type }) => {
-  const [userCount, setUserCount] = useState(null); // State to hold the user count
+  const [userCount, setUserCount] = useState(0); // Initialize user count to 0
   const [transactionAmount, setTransactionAmount] = useState(null); // Placeholder for transaction amount
-  const percentage = 20; // Assuming this is static for now
-
-  // Suppose you also want to fetch the transaction amount, you would add it here
+  let percentage = 20
+  
   useEffect(() => {
-    // Fetch the wallet data from the server
     const fetchWalletData = async () => {
       try {
-        const response = await fetch('/cbdc-wallets');
+        const response = await fetch("/cbdc-wallets");
         const data = await response.json();
-        const lastWallet = data.wallets[data.wallets.length - 1];
-        setUserCount(lastWallet.wallet_number); // Update the user count state
-        // You would replace this with actual logic to fetch transaction amount
-        setTransactionAmount(100); // Placeholder value
+        if (data.wallets && data.wallets.length > 0) {
+          const lastWallet = data.wallets[data.wallets.length - 1];
+          setUserCount(lastWallet.wallet_number);
+        } else {
+          setUserCount(0); // Set user count to 0 if there are no wallets
+        }
       } catch (error) {
         console.error("Failed to fetch wallet data:", error);
+        setUserCount(0); // Consider setting user count to 0 in case of an error
       }
     };
 
+    setTransactionAmount(100); // Placeholder value
+
     fetchWalletData();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []); // Dependency array is empty, so this effect runs once on mount
 
   let data;
   switch (type) {
@@ -48,11 +51,15 @@ export const Widget = ({ type }) => {
         ),
       };
       break;
-    case "transaction":
+    case "transactions":
       data = {
-        title: "OVERALL TRANSACTIONS",
-        isMoney: true, // Assuming you want to display money for transactions
-        link: "View all transactions",
+        title: "OVERALL TRANSACTIONS (FREQUENCY)",
+        isMoney: false,
+        link: (
+          <Link to="/admin/payment" className="link">
+            View all transactions
+          </Link>
+        ),
         icon: (
           <AccountBalanceIcon
             className="icon"
@@ -62,6 +69,12 @@ export const Widget = ({ type }) => {
       };
       break;
     default:
+      data = {
+        title: "Unknown",
+        isMoney: false,
+        link: <span>{type}</span>,
+        icon: <div />, // or any default icon
+      };
       break;
   }
 
@@ -70,7 +83,8 @@ export const Widget = ({ type }) => {
       <div className="left">
         <span className="title">{data.title}</span>
         <span className="counter">
-          {data.isMoney && "$"} {type === "user" ? userCount : transactionAmount}
+          {data.isMoney && "$"}{" "}
+          {type === "user" ? userCount : transactionAmount}
         </span>
         <span className="link">{data.link}</span>
       </div>

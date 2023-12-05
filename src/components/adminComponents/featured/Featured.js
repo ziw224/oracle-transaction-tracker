@@ -8,7 +8,7 @@ export const Featured = () => {
   return (
     <div className="featured">
       <div className="top">
-        <h1 className="title">Total Transaction Amount in Dollars</h1>
+        <h1 className="title">Total Transaction Amount (Dollars)</h1>
         <MoreVerrIcon fontsize="small" />
       </div>
       <div className="bottom">

@@ -6,3 +6,15 @@
         
     }
 }
+
+.dataTableContainer {
+    position: relative;
+  }
+  
+.fetchButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 10px; /* Adjust as needed */
+    /* Additional button styling */
+}

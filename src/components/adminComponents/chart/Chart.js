@@ -21,7 +21,7 @@ const data = [
 export const Chart = () => {
   return (
     <div className="chart">
-      <div className="title"> Last 6 Months (Overall Transaction)</div>
+      <div className="chart-title"> Last 6 Months (Overall Transaction)</div>
       <ResponsiveContainer width="100%" aspect={2/1}>
         <AreaChart
           width={730}
