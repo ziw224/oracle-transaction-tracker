@@ -66,6 +66,7 @@ export const AddTransaction = () => {
       if (importInputLine) {
         // Extract the token data
         const tokenData = importInputLine.split(":")[1].trim();
+        console.log("TOken Data: ", tokenData);
 
         // Find the wallet number set to
         const recipientWalletNumber = findWalletNumber(name);
