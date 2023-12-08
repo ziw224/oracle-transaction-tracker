@@ -4,6 +4,7 @@ import "./navbar.css";
 
 export const DropdownMenu = () => {
   const [wallets, setWallets] = useState([]);
+  const [selectedWalletNumber, setSelectedWalletNumber] = useState(null);
 
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -25,8 +26,10 @@ export const DropdownMenu = () => {
   }, []);
   
   function DropdownItem(props) {
+    // Add onClick handler to set selected wallet
     return (
-      <a className="menu-item">
+      <a className={`menu-item ${props.walletNumber === selectedWalletNumber ? 'selected' : ''}`}
+         onClick={() => setSelectedWalletNumber(props.walletNumber)}>
         <span className="icon-button">{props.leftIcon}</span>
         {props.children}
       </a>
@@ -35,8 +38,12 @@ export const DropdownMenu = () => {
 
   return (
     <div className="dropdown">
-      {wallets.map((wallet, index) => (
-        <DropdownItem leftIcon={<FaceIcon />} key={wallet.wallet_number}>
+      {wallets.map((wallet) => (
+        <DropdownItem 
+          leftIcon={<FaceIcon />} 
+          key={wallet.wallet_number} 
+          walletNumber={wallet.wallet_number}
+        >
           User {wallet.wallet_number}
         </DropdownItem>
       ))}

@@ -94,6 +94,10 @@ a {
   filter: none;
 }
 
+.menu-item.selected {
+  background-color: #525357; /* or any highlight color */
+}
+
 .menu-item:hover {
   background-color: #525357;
 }
