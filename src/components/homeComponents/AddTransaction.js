@@ -96,7 +96,6 @@ export const AddTransaction = () => {
       // Add transaction to the local state (if needed)
       const newTransaction = {
         id: Math.floor(Math.random() * 100000000),
-        text,
         name,
         amount: -parseFloat(amount), // Convert amount to a negative number for local state
       };
