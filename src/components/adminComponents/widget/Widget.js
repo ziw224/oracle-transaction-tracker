@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+// import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import PersonIcon from "@mui/icons-material/Person";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import "./widget.css";
@@ -8,7 +8,7 @@ import "./widget.css";
 export const Widget = ({ type }) => {
   const [userCount, setUserCount] = useState(0); // Initialize user count to 0
   const [transactionAmount, setTransactionAmount] = useState(null); // Placeholder for transaction amount
-  let percentage = 20
+  // let percentage = 20
   
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -53,7 +53,7 @@ export const Widget = ({ type }) => {
       break;
     case "transactions":
       data = {
-        title: "OVERALL TRANSACTIONS (FREQUENCY)",
+        title: "OVERALL TRANSACTIONS (NUMBER)",
         isMoney: false,
         link: (
           <Link to="/admin/payment" className="link">
@@ -68,6 +68,23 @@ export const Widget = ({ type }) => {
         ),
       };
       break;
+      case "transactionsDolloar":
+        data = {
+          title: "OVERALL TRANSACTIONS (DOLLARS)",
+          isMoney: true,
+          link: (
+            <Link to="/admin/payment" className="link">
+              View all transactions
+            </Link>
+          ),
+          icon: (
+            <AccountBalanceIcon
+              className="widget-icon"
+              style={{ backgroundColor: "rgba(128,0,128,0.2)", color: "purple" }}
+            />
+          ),
+        };
+        break;
     default:
       data = {
         title: "Unknown",
@@ -89,10 +106,10 @@ export const Widget = ({ type }) => {
         <span className="link">{data.link}</span>
       </div>
       <div className="left">
-        <div className="percentage positive">
+        {/* <div className="percentage positive">
           <KeyboardArrowUpIcon />
           {percentage}%
-        </div>
+        </div> */}
         {data.icon}
       </div>
     </div>

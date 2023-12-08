@@ -1,4 +1,5 @@
-import "./chart.css";
+// Chart 2 is for the transaction amount in dollar
+import "./chart2.css";
 // Go to https://recharts.org/en-US/api for more information about making charts
 import {
   AreaChart,
@@ -18,10 +19,10 @@ const data = [
   {name: "May", Total: 2000},
   {name: "June", Total: 1500},
 ];
-export const Chart = () => {
+export const Chart2 = () => {
   return (
     <div className="chart">
-      <div className="chart-title"> Last 6 Months (Overall Transaction)</div>
+      <div className="chart-title"> Last 6 Months (Overall Transaction in Dollar)</div>
       <ResponsiveContainer width="100%" aspect={2/1}>
         <AreaChart
           width={730}

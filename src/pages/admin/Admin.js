@@ -1,7 +1,9 @@
 import { AdminSidebar } from "../../components/adminComponents/sidebar/AdminSidebar";
 import { Widget } from "../../components/adminComponents/widget/Widget";
-import { Featured } from "../../components/adminComponents/featured/Featured";
-import { Chart } from "../../components/adminComponents/chart/Chart";
+import { Featured1 } from "../../components/adminComponents/featured/featured1/Featured1";
+import { Featured2 } from "../../components/adminComponents/featured/featured2/Featured2";
+import { Chart1 } from "../../components/adminComponents/chart/chart1/Chart1";
+import { Chart2 } from "../../components/adminComponents/chart/chart2/Chart2";
 import "../../App.css";
 
 export const Admin = () => {
@@ -12,10 +14,15 @@ export const Admin = () => {
         <div className="widgets">
           <Widget type="user" />
           <Widget type="transactions" />
+          <Widget type="transactionsDolloar" />
         </div>
         <div className="charts">
-           <Featured />
-           <Chart />
+          <Featured1 />
+          <Chart1 />
+        </div>
+        <div className="charts">
+           <Featured2 />
+           <Chart2 />
         </div>
       </div>
     </div>

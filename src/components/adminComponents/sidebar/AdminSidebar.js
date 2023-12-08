@@ -34,6 +34,30 @@ export const AdminSidebar = () => {
               <span>Payment</span>
             </li>
           </Link>
+          <Link to="/admin/transactionholder" style={{ textDecoration: "none" }}>
+            <li>
+              <PaymentsIcon className="icon" />
+              <span>Transaction Holder</span>
+            </li>
+          </Link>
+          <Link to="/admin/input" style={{ textDecoration: "none" }}>
+            <li>
+              <PaymentsIcon className="icon" />
+              <span>Input</span>
+            </li>
+          </Link>
+          <Link to="/admin/output" style={{ textDecoration: "none" }}>
+            <li>
+              <PaymentsIcon className="icon" />
+              <span>Output</span>
+            </li>
+          </Link>
+          <Link to="/admin/uhspreviews" style={{ textDecoration: "none" }}>
+            <li>
+              <PaymentsIcon className="icon" />
+              <span>UHS Preview</span>
+            </li>
+          </Link>
         </ul>
       </div>
     </div>

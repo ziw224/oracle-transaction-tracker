@@ -16,6 +16,10 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/user" element={<List type="wallets" />} />
             <Route path="/admin/payment" element={<List type="transactions" />} />
+            <Route path="/admin/transactionholder" element={<List type="transactionholder" />} />
+            <Route path="/admin/input" element={<List type="input" />} />
+            <Route path="/admin/output" element={<List type="output" />} />
+            <Route path="/admin/uhspreviews" element={<List type="uhspreviews" />} />
           </Routes>
         </GlobalWalletProvider>
       </Router>

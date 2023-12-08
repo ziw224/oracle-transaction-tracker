@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import FaceIcon from '@mui/icons-material/Face';
-import { GlobalWalletContext } from "../../../context/WalletContext"; // Make sure this path is correct
+import { GlobalWalletContext } from "../../../context/WalletContext";
 import "./navbar.css";
 
 export const DropdownMenu = ({ toggleDropdown }) => {
