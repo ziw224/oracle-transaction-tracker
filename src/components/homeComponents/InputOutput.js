@@ -7,9 +7,10 @@ export const InputOutput = () => {
   const [spent, setSpent] = useState("0.00");
 
   useEffect(() => {
-    const fetchUTXOs = async () => {
+    const fetchData = async () => {
       if (selectedWalletNumber) {
         try {
+          // Fetch UTXOs
           const response = await fetch(`/command/inspect-wallet/${selectedWalletNumber}`);
           const data = await response.json();
           const utxoString = data.output[0];
@@ -17,20 +18,22 @@ export const InputOutput = () => {
           if (utxoMatch && utxoMatch[1]) {
             setUnspent(utxoMatch[1]); // Set the number of UTXOs
           }
-          // For the spent value, you would typically have a different endpoint or logic to fetch this data.
-          // Here I'm assuming you have another endpoint or already have the data in your context.
-          // You should replace the below fetch or calculation for 'spent' as per your application logic.
+
+          // Fetch spent value
+          // Replace the below URL with your actual endpoint for fetching the spent value
           const spentResponse = "0.00";
           setSpent(spentResponse);
+
         } catch (error) {
-          console.error("Failed to fetch UTXOs:", error);
+          console.error("Failed to fetch wallet data:", error);
           setUnspent("0.00");
+          // Handle error for spent value as well
           setSpent("0.00");
         }
       }
     };
 
-    fetchUTXOs();
+    fetchData();
   }, [selectedWalletNumber]);
 
   return (
