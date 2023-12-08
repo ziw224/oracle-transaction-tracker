@@ -21,6 +21,14 @@ export const DataTable = ({ type }) => {
         setColumns(['WALLET NUMBER', 'WALLET ADDRESS']);
       } else if (type === 'transactions') {
         endpoint = '/table/transaction';
+      } else if (type === 'transactionholder') {
+        endpoint = '/table/transactionholder';
+      } else if (type === 'input') {
+        endpoint = '/table/input';
+      } else if (type === 'output') {
+        endpoint = '/table/output';
+      } else if (type === 'uhspreviews') {
+        endpoint = '/table/uhspreviews';
       }
 
       try {
@@ -40,10 +48,22 @@ export const DataTable = ({ type }) => {
         } else if (type === 'transactions') {
           setColumns(data.columns);
           setDataRows(data.rows);
+        } else if (type === 'transactionholder') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
+        } else if (type === 'input') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
+        } else if (type === 'output') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
+        } else if (type === 'uhspreviews') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
         }
       } catch (error) {
         console.error(`Failed to fetch ${type} data:`, error);
-        // Handle error state here
+        setDataRows([]);
       }
     };
 
