@@ -16,7 +16,7 @@
     justify-content: space-between;
   }
 
-  .title {
+  .widget-title {
     font-weight: bold;
     font-size: 14px;
     color: rgb(160,160,160)
@@ -47,7 +47,7 @@
     }
   }
 
-  .icon{
+  .widget-icon{
     border-radius: 5px;
     align-self: flex-end;
   }

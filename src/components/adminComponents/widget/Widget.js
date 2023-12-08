@@ -45,7 +45,7 @@ export const Widget = ({ type }) => {
         ),
         icon: (
           <PersonIcon
-            className="icon"
+            className="widget-icon"
             style={{ color: "crimson", backgroundColor: "rgba(255,0,0,0.2)" }}
           />
         ),
@@ -62,7 +62,7 @@ export const Widget = ({ type }) => {
         ),
         icon: (
           <AccountBalanceIcon
-            className="icon"
+            className="widget-icon"
             style={{ backgroundColor: "rgba(128,0,128,0.2)", color: "purple" }}
           />
         ),
@@ -81,7 +81,7 @@ export const Widget = ({ type }) => {
   return (
     <div className="widget">
       <div className="left">
-        <span className="title">{data.title}</span>
+        <span className="widget-title">{data.title}</span>
         <span className="counter">
           {data.isMoney && "$"}{" "}
           {type === "user" ? userCount : transactionAmount}

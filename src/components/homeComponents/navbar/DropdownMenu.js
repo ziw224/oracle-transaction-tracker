@@ -1,16 +1,23 @@
 import React from "react";
+import FaceIcon from '@mui/icons-material/Face';
+
 import "./navbar.css";
+
+
 export const DropdownMenu = () => {
   function DropdownItem(props) {
     return (
-      <a href="#" className="menu-item">
+      <a className="menu-item">
         <span className="icon-button">{props.leftIcon}</span>
         {props.children}
-        <span className="icon-right">{props.rightIcon}</span>
       </a>
     );
   }
-  return <div className="dropdown">
-    <DropdownItem> user1</DropdownItem>
-  </div>;
+  return (
+    <div className="dropdown">
+      <DropdownItem leftIcon={<FaceIcon/>}>user1</DropdownItem>
+      <DropdownItem leftIcon={<FaceIcon/>}>user2</DropdownItem>
+      <DropdownItem leftIcon={<FaceIcon/>}>user3</DropdownItem>
+    </div>
+  );
 };
