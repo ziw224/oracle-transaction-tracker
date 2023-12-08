@@ -114,6 +114,10 @@ input[type="number"] {
   list-style-type: none;
   padding: 0;
   margin-bottom: 40px;
+  white-space: normal; /* Allows the text to wrap */
+  word-break: break-all; /* Allows unbreakable words to be broken */
+  overflow: visible; /* Ensures that the content is not clipped */
+  text-overflow: clip; /* Clips any overflowed content but doesn't add ellipsis */
 }
 
 .list li {
