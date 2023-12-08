@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { DataGrid } from '@mui/x-data-grid';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 import "./datatable.css";
 
 export const DataTable = ({ type }) => {
@@ -12,14 +18,19 @@ export const DataTable = ({ type }) => {
       console.log(type);
       if (type === 'wallets') {
         endpoint = '/cbdc-wallets';
-        setColumns([
-          { field: 'wallet_number', headerName: 'WALLET NUMBER', width: 150 },
-          { field: 'wallet_address', headerName: 'WALLET ADDRESS', width: 250, flex: 1 },
-        ]);
-      } else if (type === 'transactions' || type === 'transactionholder' || type === 'input' || type === 'output' || type === 'uhspreviews') {
-        endpoint = `/table/${type}`;
+        setColumns(['WALLET NUMBER', 'WALLET ADDRESS']);
+      } else if (type === 'transactions') {
+        endpoint = '/table/transaction';
+      } else if (type === 'transactionholder') {
+        endpoint = '/table/transactionholder';
+      } else if (type === 'input') {
+        endpoint = '/table/input';
+      } else if (type === 'output') {
+        endpoint = '/table/output';
+      } else if (type === 'uhspreviews') {
+        endpoint = '/table/uhspreviews';
       }
-  
+
       try {
         const response = await fetch(endpoint, {
           method: 'GET',
@@ -57,20 +68,35 @@ export const DataTable = ({ type }) => {
     };
 
     fetchData();
-  }, [type]);  
+  }, [type]); // Dependency array includes type, so the effect will re-run if type changes
 
   return (
     <div className="datatable">
-      <DataGrid
-        rows={dataRows}
-        columns={columns}
-        pageSize={5}
-        checkboxSelection
-        disableSelectionOnClick
-        sortingOrder={['asc', 'desc']}
-      />
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="a dense table">
+          <TableHead>
+            <TableRow>
+              {columns.map((column, index) => (
+                <TableCell key={index}>{column}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {dataRows.map((row, index) => (
+              <TableRow key={index}>
+                {Object.values(row).map((value, cellIndex) => (
+                  <TableCell key={cellIndex}>
+                    {value !== null ? value : 'N/A'}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 };
 
 export default DataTable;
+
