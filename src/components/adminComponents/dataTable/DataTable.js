@@ -28,27 +28,34 @@ export const DataTable = ({ type }) => {
           },
         });
         const data = await response.json();
-  
+        
         if (type === 'wallets') {
-          const formattedData = data.wallets.map((wallet, index) => ({
-            id: index, // Use index as the unique id for each row
-            ...wallet,
-          }));
-          setDataRows(formattedData);
-        } else {
-          setColumns(data.columns.map(column => ({ field: column, headerName: column.toUpperCase() })));
-          const formattedData = data.rows.map((row, index) => ({
-            id: index, // Use index as the unique id for each row
-            ...row,
-          }));
-          setDataRows(formattedData);
+          setDataRows(data.wallets.map(wallet => ({
+            wallet_number: wallet.wallet_number,
+            wallet_address: wallet.wallet_address
+          })));
+        } else if (type === 'transactions') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
+        } else if (type === 'transactionholder') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
+        } else if (type === 'input') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
+        } else if (type === 'output') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
+        } else if (type === 'uhspreviews') {
+          setColumns(data.columns);
+          setDataRows(data.rows);
         }
       } catch (error) {
         console.error(`Failed to fetch ${type} data:`, error);
         setDataRows([]);
       }
     };
-  
+
     fetchData();
   }, [type]);  
 
