@@ -1,20 +1,36 @@
-import React, { useContext } from "react";
-import { GlobalContext } from "../../context/GlobalState";
-
+import React, { useContext, useEffect, useState } from "react";
+import { GlobalWalletContext } from "../../context/WalletContext";
 
 export const Balance = () => {
-  const { transactions } = useContext(GlobalContext);
-  
-  // Mapping through and getting all the amounts in the history
-  const amounts = transactions.map(transaction => transaction.amount);
-  
-  // Adding them all together and keeping two decimal places.
-  const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
-  
+  const { selectedWalletNumber } = useContext(GlobalWalletContext);
+  const [balance, setBalance] = useState("0.00");
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        if (selectedWalletNumber) {
+          // Fetch the balance
+          const balanceResponse = await fetch(`/command/inspect-wallet/${selectedWalletNumber}`);
+          const balanceData = await balanceResponse.json();
+          const balanceString = balanceData.output[0];
+          const balanceMatch = balanceString.match(/Balance: \$(\d+\.\d+)/);
+          if (balanceMatch && balanceMatch[1]) {
+            setBalance(balanceMatch[1]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch wallet data:", error);
+        setBalance("0.00");
+      }
+    };
+
+    fetchBalance();
+  }, [selectedWalletNumber]);
+
   return (
     <>
       <h4>Your Balance</h4>
-      <h1> {total} </h1>
+      <h1>${balance}</h1>
     </>
   );
 };
