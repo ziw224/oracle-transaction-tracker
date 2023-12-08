@@ -13,7 +13,6 @@ export const DataTable = ({ type }) => {
       if (type === 'wallets') {
         endpoint = '/cbdc-wallets';
         setColumns([
-          { field: 'id', headerName: 'ID', width: 90 },
           { field: 'wallet_number', headerName: 'WALLET NUMBER', width: 150 },
           { field: 'wallet_address', headerName: 'WALLET ADDRESS', width: 250, flex: 1 },
         ]);
@@ -31,15 +30,15 @@ export const DataTable = ({ type }) => {
         const data = await response.json();
   
         if (type === 'wallets') {
-          const formattedData = data.wallets.map(wallet => ({
-            id: wallet.wallet_number, // Assuming wallet_number is unique and can be used as an id
+          const formattedData = data.wallets.map((wallet, index) => ({
+            id: index, // Use index as the unique id for each row
             ...wallet,
           }));
           setDataRows(formattedData);
         } else {
           setColumns(data.columns.map(column => ({ field: column, headerName: column.toUpperCase() })));
           const formattedData = data.rows.map((row, index) => ({
-            id: index, // You might need to adjust this based on how you can uniquely identify rows
+            id: index, // Use index as the unique id for each row
             ...row,
           }));
           setDataRows(formattedData);
@@ -51,7 +50,7 @@ export const DataTable = ({ type }) => {
     };
   
     fetchData();
-  }, [type]);
+  }, [type]);  
 
   return (
     <div className="datatable">
