@@ -13,13 +13,14 @@ export const DataTable = ({ type }) => {
       if (type === 'wallets') {
         endpoint = '/cbdc-wallets';
         setColumns([
-          { field: 'wallet_number', headerName: 'WALLET NUMBER' },
-          { field: 'wallet_address', headerName: 'WALLET ADDRESS' },
+          { field: 'id', headerName: 'ID', width: 90 },
+          { field: 'wallet_number', headerName: 'WALLET NUMBER', width: 150 },
+          { field: 'wallet_address', headerName: 'WALLET ADDRESS', width: 250, flex: 1 },
         ]);
       } else if (type === 'transactions' || type === 'transactionholder' || type === 'input' || type === 'output' || type === 'uhspreviews') {
         endpoint = `/table/${type}`;
       }
-
+  
       try {
         const response = await fetch(endpoint, {
           method: 'GET',
@@ -28,21 +29,29 @@ export const DataTable = ({ type }) => {
           },
         });
         const data = await response.json();
-
+  
         if (type === 'wallets') {
-          setDataRows(data.wallets);
+          const formattedData = data.wallets.map(wallet => ({
+            id: wallet.wallet_number, // Assuming wallet_number is unique and can be used as an id
+            ...wallet,
+          }));
+          setDataRows(formattedData);
         } else {
-          setColumns(data.columns.map(column => ({ field: column, headerName: column })));
-          setDataRows(data.rows);
+          setColumns(data.columns.map(column => ({ field: column, headerName: column.toUpperCase() })));
+          const formattedData = data.rows.map((row, index) => ({
+            id: index, // You might need to adjust this based on how you can uniquely identify rows
+            ...row,
+          }));
+          setDataRows(formattedData);
         }
       } catch (error) {
         console.error(`Failed to fetch ${type} data:`, error);
         setDataRows([]);
       }
     };
-
+  
     fetchData();
-  }, [type]); // Dependency array includes type, so the effect will re-run if type changes
+  }, [type]);
 
   return (
     <div className="datatable">
