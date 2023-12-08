@@ -61,31 +61,36 @@ export const AddTransaction = () => {
       const sendResult = await sendResponse.json();
       console.log(sendResult);
 
+      // Initialize tokenData to an empty string
+      let tokenData = "";
+
       // Check if "Data for recipient importinput:" line exists
-      const importInputLine = Object.values(sendResult.output).find(line => line.startsWith("Data for recipient importinput:"));
-      if (importInputLine) {
-        // Extract the token data
-        const tokenData = importInputLine.split(":")[1].trim();
-        console.log("TOken Data: ", tokenData);
-
-        // Find the wallet number set to
-        const recipientWalletNumber = findWalletNumber(name);
-        if (recipientWalletNumber) {
-          // Make the import tokens call
-          const importResponse = await fetch(`/command/import-tokens/${recipientWalletNumber}/${tokenData}`, {
-            method: 'GET', // Adjust according to your API specification
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!importResponse.ok) {
-            throw new Error('Failed to import tokens');
-          }
-
-          const importResult = await importResponse.json();
-          console.log(importResult); // Handle the response as needed
+      const outputLines = Object.values(sendResult.output);
+      for (let i = 0; i < outputLines.length; i++) {
+        if (outputLines[i].startsWith("Data for recipient importinput:")) {
+          tokenData = outputLines[i + 1]?.trim();
+          break;
         }
+      }
+      console.log("Token Import Data: ", tokenData);
+
+      // Find the wallet number set to
+      const recipientWalletNumber = findWalletNumber(name);
+      if (recipientWalletNumber && tokenData) {
+        // Make the import tokens call
+        const importResponse = await fetch(`/command/import-tokens/${recipientWalletNumber}/${tokenData}`, {
+          method: 'GET', // Adjust according to your API specification
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!importResponse.ok) {
+          throw new Error('Failed to import tokens');
+        }
+
+        const importResult = await importResponse.json();
+        console.log(importResult); // Handle the response as needed
       }
 
       // Add transaction to the local state (if needed)
