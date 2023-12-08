@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import FaceIcon from '@mui/icons-material/Face';
-import { GlobalWalletContext } from "../../../context/WalletContext"; // Import the context
+import { GlobalWalletContext } from "../../../context/WalletContext"; // Make sure this path is correct
 import "./navbar.css";
 
 export const DropdownMenu = ({ toggleDropdown }) => {
   const [wallets, setWallets] = useState([]);
-  const { setSelectedWalletNumber } = useContext(GlobalWalletContext); // Use the context
+  const { selectedWalletNumber, setSelectedWalletNumber } = useContext(GlobalWalletContext); // Destructure selectedWalletNumber as well
 
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -27,15 +27,16 @@ export const DropdownMenu = ({ toggleDropdown }) => {
   }, []);
 
   function handleUserSelection(walletNumber) {
-    // Set the selected wallet number in the context
-    setSelectedWalletNumber(walletNumber);
-    toggleDropdown();
+    setSelectedWalletNumber(walletNumber); // Set the selected wallet number in the context
+    toggleDropdown(); // Close the dropdown menu
   }
   
   function DropdownItem(props) {
     return (
-      <a className={`menu-item ${props.walletNumber === props.selectedWalletNumber ? 'selected' : ''}`}
-         onClick={() => handleUserSelection(props.walletNumber)}>
+      <a
+        className={`menu-item ${props.walletNumber === selectedWalletNumber ? 'selected' : ''}`}
+        onClick={() => handleUserSelection(props.walletNumber)}
+      >
         <span className="icon-button">{props.leftIcon}</span>
         {props.children}
       </a>
@@ -49,8 +50,6 @@ export const DropdownMenu = ({ toggleDropdown }) => {
           leftIcon={<FaceIcon />} 
           key={wallet.wallet_number} 
           walletNumber={wallet.wallet_number}
-          selectedWalletNumber={selectedWalletNumber}
-          onClick={() => handleUserSelection(wallet.wallet_number)}
         >
           User {wallet.wallet_number}
         </DropdownItem>
