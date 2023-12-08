@@ -24,6 +24,9 @@ body {
 .container {
   margin: 30px auto;
   width: 350px;
+  overflow: hidden;
+  max-height: 100vh;
+  overflow: hidden; /* Hide the overflow */
 }
 h2 {
   text-align: center;
@@ -125,6 +128,17 @@ input[type="number"] {
   position: relative;
   padding: 10px;
   margin: 10px 0;
+  overflow: hidden; /* Hide overflow */
+  white-space: nowrap; /* Keep the content on a single line */
+  text-overflow: ellipsis;
+}
+
+.list li span {
+  display: inline-block;
+  overflow: hidden; /* Hide overflow */
+  white-space: nowrap; /* Keep the content on a single line */
+  text-overflow: ellipsis; /* Add an ellipsis to content that overflows */
+  max-width: 80%;
 }
 
 .list li.plus {
