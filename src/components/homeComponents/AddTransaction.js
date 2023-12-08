@@ -3,7 +3,7 @@ import { GlobalContext } from "../../context/GlobalState";
 import { GlobalWalletContext } from "../../context/WalletContext";
 
 export const AddTransaction = () => {
-  const [text, setText] = useState("");
+  // const [text, setText] = useState("");
   const [name, setName] = useState(""); // 'name' holds the recipient's wallet address
   const [amount, setAmount] = useState(0);
 
@@ -79,7 +79,7 @@ export const AddTransaction = () => {
       if (recipientWalletNumber && tokenData) {
         // Make the import tokens call
         const importResponse = await fetch(`/command/import-tokens/${recipientWalletNumber}/${tokenData}`, {
-          method: 'GET', // Adjust according to your API specification
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -96,14 +96,13 @@ export const AddTransaction = () => {
       // Add transaction to the local state (if needed)
       const newTransaction = {
         id: Math.floor(Math.random() * 100000000),
-        text,
         name,
         amount: -parseFloat(amount), // Convert amount to a negative number for local state
       };
       addTransaction(newTransaction);
 
       // Clear input fields after submitting
-      setText("");
+      // setText("");
       setName("");
       setAmount(0);
 
@@ -117,7 +116,7 @@ export const AddTransaction = () => {
     <>
       <h3>Add new transaction</h3>
       <form onSubmit={onSubmit}>
-        <div className="form-control">
+        {/* <div className="form-control">
           <label htmlFor="text">Text</label>
           <input
             type="text"
@@ -125,7 +124,7 @@ export const AddTransaction = () => {
             onChange={(event) => setText(event.target.value)}
             placeholder="Enter text..."
           />
-        </div>
+        </div> */}
         <div className="form-control">
           <label htmlFor="user2">Wallet Address</label>
           <input
