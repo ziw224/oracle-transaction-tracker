@@ -46,7 +46,7 @@ export const Balance = () => {
       {walletAddress && (
         <>
           <h4>Wallet Address</h4>
-          <p>{walletAddress}</p>
+          <wa>{walletAddress}</wa>
         </>
       )}
     </>
