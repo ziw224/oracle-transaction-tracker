@@ -243,3 +243,11 @@ input[type="number"] {
   color: #888;
   margin-left: 10px;
 }
+
+wa {
+  display: block; /* or inline-block, depending on your layout needs */
+  white-space: pre-wrap; /* allows the text to wrap and preserves whitespace */
+  word-break: break-word; /* to break long words that would otherwise overflow */
+  overflow-wrap: break-word; /* ensures proper word wrapping */
+  max-width: 100%; /* adjust if necessary, to fit the container's width */
+}
