@@ -14,6 +14,7 @@ export const Admin = () => {
         <div className="widgets">
           <Widget type="user" />
           <Widget type="transactions" />
+          <Widget type="transactionsDolloar" />
         </div>
         <div className="charts">
           <Featured1 />

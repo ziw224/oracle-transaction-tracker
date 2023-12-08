@@ -53,7 +53,7 @@ export const Widget = ({ type }) => {
       break;
     case "transactions":
       data = {
-        title: "OVERALL TRANSACTIONS (NUMBER IN TOTAL)",
+        title: "OVERALL TRANSACTIONS (NUMBER)",
         isMoney: false,
         link: (
           <Link to="/admin/payment" className="link">
@@ -68,6 +68,23 @@ export const Widget = ({ type }) => {
         ),
       };
       break;
+      case "transactionsDolloar":
+        data = {
+          title: "OVERALL TRANSACTIONS (DOLLARS)",
+          isMoney: true,
+          link: (
+            <Link to="/admin/payment" className="link">
+              View all transactions
+            </Link>
+          ),
+          icon: (
+            <AccountBalanceIcon
+              className="widget-icon"
+              style={{ backgroundColor: "rgba(128,0,128,0.2)", color: "purple" }}
+            />
+          ),
+        };
+        break;
     default:
       data = {
         title: "Unknown",
