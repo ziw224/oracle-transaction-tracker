@@ -24,9 +24,6 @@ body {
 .container {
   margin: 30px auto;
   width: 350px;
-  overflow: hidden;
-  max-height: 100vh;
-  overflow: hidden; /* Hide the overflow */
 }
 h2 {
   text-align: center;
@@ -117,6 +114,10 @@ input[type="number"] {
   list-style-type: none;
   padding: 0;
   margin-bottom: 40px;
+  white-space: normal; /* Allows the text to wrap */
+  word-break: break-all; /* Allows unbreakable words to be broken */
+  overflow: visible; /* Ensures that the content is not clipped */
+  text-overflow: clip; /* Clips any overflowed content but doesn't add ellipsis */
 }
 
 .list li {
@@ -128,17 +129,6 @@ input[type="number"] {
   position: relative;
   padding: 10px;
   margin: 10px 0;
-  overflow: hidden; /* Hide overflow */
-  white-space: nowrap; /* Keep the content on a single line */
-  text-overflow: ellipsis;
-}
-
-.list li span {
-  display: inline-block;
-  overflow: hidden; /* Hide overflow */
-  white-space: nowrap; /* Keep the content on a single line */
-  text-overflow: ellipsis; /* Add an ellipsis to content that overflows */
-  max-width: 80%;
 }
 
 .list li.plus {
