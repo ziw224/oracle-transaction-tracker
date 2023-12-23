@@ -106,31 +106,31 @@ async def admin():
 async def admin_users():
     return FileResponse('build/index.html')
 
-@app.get("/test/hello")
-async def hello():
-    global connection
-    cursor = None
-    try:
-        logger.info("Getting database connection for /test/hello endpoint.")
-        cursor = connection.cursor()
-        # cursor.execute("SELECT * FROM admin.test_shard")
-        # for row in cursor:
-        #     logger.info(row[0])
-    except oracledb.DatabaseError as e:
-        error, = e.args
-        if error.code == 1017:
-            # ORA-01017: invalid username/password; logon denied
-            logger.error("Database credentials are invalid.")
-            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
-        else:
-            # Generic error handler for database issues
-            logger.error("Database connection issue." + str(e))
-            raise HTTPException(status_code=500, detail="Database connection issue.")
-    finally:
-        if cursor:      # release cursor
-            logger.info("Releasing cursor on /test/hello endpoint.")
-            cursor.close()
-    return {"message": "Hello World"}
+# @app.get("/test/hello")
+# async def hello():
+#     global connection
+#     cursor = None
+#     try:
+#         logger.info("Getting database connection for /test/hello endpoint.")
+#         cursor = connection.cursor()
+#         # cursor.execute("SELECT * FROM admin.test_shard")
+#         # for row in cursor:
+#         #     logger.info(row[0])
+#     except oracledb.DatabaseError as e:
+#         error, = e.args
+#         if error.code == 1017:
+#             # ORA-01017: invalid username/password; logon denied
+#             logger.error("Database credentials are invalid.")
+#             raise HTTPException(status_code=400, detail="Database credentials are invalid.")
+#         else:
+#             # Generic error handler for database issues
+#             logger.error("Database connection issue." + str(e))
+#             raise HTTPException(status_code=500, detail="Database connection issue.")
+#     finally:
+#         if cursor:      # release cursor
+#             logger.info("Releasing cursor on /test/hello endpoint.")
+#             cursor.close()
+#     return {"message": "Hello World"}
 
 @app.get("/cbdc-wallets")
 async def get_wallets():
@@ -391,7 +391,7 @@ async def get_transaction(request: Request):
             cursor.close()
 
 @app.get("/table/transactionholder")
-async def get_transaction(request: Request):
+async def get_transactionholder(request: Request):
     """
     Return the contents of the transactionholder table.
     """
@@ -434,7 +434,7 @@ async def get_transaction(request: Request):
             cursor.close()
 
 @app.get("/table/uhs")
-async def get_transaction(request: Request):
+async def get_uhs(request: Request):
     """
     Return the contents of the uhs table.
     """
@@ -477,7 +477,7 @@ async def get_transaction(request: Request):
             cursor.close()
 
 @app.get("/table/uhspreviews")
-async def get_transaction(request: Request):
+async def get_uhspreview(request: Request):
     """
     Return the contents of the uhs previews table.
     """
@@ -519,42 +519,42 @@ async def get_transaction(request: Request):
             logger.info("Releasing cursor on /table/uhspreviews endpoint.")
             cursor.close()
 
-@app.get("/table/test")
-async def get_test_table(request: Request):
-    """
-    Return the contents of the test_table table.
-    """
-    cursor = None
-    try:
-        logger.info("Getting database connection for /table/test endpoint.")
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM admin.test_table")
-        columns = [col[0] for col in cursor.description]
-        rows = []
-        for row in cursor:
-            rows.append((row[0], row[1], row[2]))
-        if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
-            return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
-        return templates.TemplateResponse("table.html", {
-            "request": request, 
-            "rows": rows,
-            "columns": columns,
-            "table_title": "Test Table"
-        })
-    except oracledb.DatabaseError as e:
-        error, = e.args
-        if error.code == 1017:
-            # ORA-01017: invalid username/password; logon denied
-            logger.error("Database credentials are invalid.")
-            raise HTTPException(status_code=400, detail="Database credentials are invalid.")
-        else:
-            # Generic error handler for database issues
-            logger.error("Database connection issue." + str(e))
-            raise HTTPException(status_code=500, detail="Database connection issue.")
-    finally:
-        if cursor:      # release cursor
-            logger.info("Releasing cursor on /table/test endpoint.")
-            cursor.close()
+# @app.get("/table/test")
+# async def get_test_table(request: Request):
+#     """
+#     Return the contents of the test_table table.
+#     """
+#     cursor = None
+#     try:
+#         logger.info("Getting database connection for /table/test endpoint.")
+#         cursor = connection.cursor()
+#         cursor.execute("SELECT * FROM admin.test_table")
+#         columns = [col[0] for col in cursor.description]
+#         rows = []
+#         for row in cursor:
+#             rows.append((row[0], row[1], row[2]))
+#         if "application/json" in request.headers.get("accept", ""):         # Check the 'Accept' header in the request
+#             return {"columns": columns, "rows": rows}                       # Respond with JSON if 'application/json' is specified in the 'Accept' header
+#         return templates.TemplateResponse("table.html", {
+#             "request": request, 
+#             "rows": rows,
+#             "columns": columns,
+#             "table_title": "Test Table"
+#         })
+#     except oracledb.DatabaseError as e:
+#         error, = e.args
+#         if error.code == 1017:
+#             # ORA-01017: invalid username/password; logon denied
+#             logger.error("Database credentials are invalid.")
+#             raise HTTPException(status_code=400, detail="Database credentials are invalid.")
+#         else:
+#             # Generic error handler for database issues
+#             logger.error("Database connection issue." + str(e))
+#             raise HTTPException(status_code=500, detail="Database connection issue.")
+#     finally:
+#         if cursor:      # release cursor
+#             logger.info("Releasing cursor on /table/test endpoint.")
+#             cursor.close()
 
 @app.get("/logs", response_class=HTMLResponse)
 async def get_logs(request: Request):
